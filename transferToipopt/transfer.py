@@ -115,7 +115,7 @@ x_goal = np.array([ 750,  length_before+length_step+2*distance+offset_after+800,
 			    750,  length_before+length_step+2*distance+offset_after,     0.0,
 			    500,  length_before+length_step+2*distance+offset_after+400, 0.0])
 
-print x_goal
+print(x_goal)
 
 #Big-M constants
 M = []
@@ -402,171 +402,199 @@ rSy = (r0y + rNy)/2.0
 rSz = (r0z + rNz)/2.0
 
 #------------------------------------ Constraint 1 -----------------------------------------------------------------
-def CoM(x, user_data=None):
-    assert len(x) == nvar
-    result = np.array(
-        [x[0+24*step] - x[3+24*step] + \
-        (L_coxa*m2*np.cos(x[6+24*step]) + L_coxa*m2*np.cos(x[9+24*step]) + L_coxa*m3*np.cos(x[6+24*step]) + L_coxa*m2*np.cos(x[12+24*step]) +
-        L_coxa*m3*np.cos(x[9+24*step]) + L_coxa*m2*np.cos(x[15+24*step]) + L_coxa*m3*np.cos(x[12+24*step]) + L_coxa*m2*np.cos(x[18+24*step]) +
-        L_coxa*m3*np.cos(x[15+24*step]) + L_coxa*m2*np.cos(x[21+24*step]) + L_coxa*m3*np.cos(x[18+24*step]) + L_coxa*m3*np.cos(x[21+24*step]) +
-        L_femur*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step]) + L_femur*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step]) + L_femur*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step]) +
-        L_femur*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step]) + L_femur*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step]) + L_femur*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step]) +
-        Xm1*m1*np.cos(x[6+24*step]) + Xm1*m1*np.cos(x[9+24*step]) + Xm1*m1*np.cos(x[12+24*step]) +
-        Xm1*m1*np.cos(x[15+24*step]) + Xm1*m1*np.cos(x[18+24*step]) + Xm1*m1*np.cos(x[21+24*step]) +
-        Xm2*m2*np.cos(x[6+24*step])*np.cos(x[7+24*step]) + Xm2*m2*np.cos(x[9+24*step])*np.cos(x[10+24*step]) + Xm2*m2*np.cos(x[12+24*step])*np.cos(x[13+24*step]) +
-        Xm2*m2*np.cos(x[15+24*step])*np.cos(x[16+24*step]) + Xm2*m2*np.cos(x[18+24*step])*np.cos(x[19+24*step]) + Xm2*m2*np.cos(x[21+24*step])*np.cos(x[22+24*step]) -
-        Ym3*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.sin(x[8+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step]) -
-        Ym3*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.sin(x[11+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step]) -
-        Ym3*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.sin(x[14+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step]) -
-        Ym3*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.sin(x[17+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step]) -
-        Ym3*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.sin(x[20+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step]) -
-        Ym3*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.sin(x[23+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb),
+#def CoM(x, user_data=None):
+#     assert len(x) == nvar
+#     result = np.zeros(3*N)
+#     for step in range(N):
+#         result[step*3+0] = \
+#             x[0+24*step] - x[3+24*step] + \
+#             (L_coxa*m2*np.cos(x[6+24*step]) + L_coxa*m2*np.cos(x[9+24*step]) + L_coxa*m3*np.cos(x[6+24*step]) + L_coxa*m2*np.cos(x[12+24*step]) +
+#             L_coxa*m3*np.cos(x[9+24*step]) + L_coxa*m2*np.cos(x[15+24*step]) + L_coxa*m3*np.cos(x[12+24*step]) + L_coxa*m2*np.cos(x[18+24*step]) +
+#             L_coxa*m3*np.cos(x[15+24*step]) + L_coxa*m2*np.cos(x[21+24*step]) + L_coxa*m3*np.cos(x[18+24*step]) + L_coxa*m3*np.cos(x[21+24*step]) +
+#             L_femur*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step]) + L_femur*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step]) + L_femur*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step]) +
+#             L_femur*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step]) + L_femur*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step]) + L_femur*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step]) +
+#             Xm1*m1*np.cos(x[6+24*step]) + Xm1*m1*np.cos(x[9+24*step]) + Xm1*m1*np.cos(x[12+24*step]) +
+#             Xm1*m1*np.cos(x[15+24*step]) + Xm1*m1*np.cos(x[18+24*step]) + Xm1*m1*np.cos(x[21+24*step]) +
+#             Xm2*m2*np.cos(x[6+24*step])*np.cos(x[7+24*step]) + Xm2*m2*np.cos(x[9+24*step])*np.cos(x[10+24*step]) + Xm2*m2*np.cos(x[12+24*step])*np.cos(x[13+24*step]) +
+#             Xm2*m2*np.cos(x[15+24*step])*np.cos(x[16+24*step]) + Xm2*m2*np.cos(x[18+24*step])*np.cos(x[19+24*step]) + Xm2*m2*np.cos(x[21+24*step])*np.cos(x[22+24*step]) -
+#             Ym3*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.sin(x[8+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step]) -
+#             Ym3*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.sin(x[11+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step]) -
+#             Ym3*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.sin(x[14+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step]) -
+#             Ym3*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.sin(x[17+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step]) -
+#             Ym3*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.sin(x[20+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step]) -
+#             Ym3*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.sin(x[23+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#
+#         result[step*3+1] = \
+#             x[1+24*step] - x[4+24*step] + \
+#             (L_coxa*m2*np.sin(x[6+24*step]) + L_coxa*m2*np.sin(x[9+24*step]) + L_coxa*m3*np.sin(x[6+24*step]) + L_coxa*m2*np.sin(x[12+24*step]) +
+#             L_coxa*m3*np.sin(x[9+24*step]) + L_coxa*m2*np.sin(x[15+24*step]) + L_coxa*m3*np.sin(x[12+24*step]) + L_coxa*m2*np.sin(x[18+24*step]) +
+#             L_coxa*m3*np.sin(x[15+24*step]) + L_coxa*m2*np.sin(x[21+24*step]) + L_coxa*m3*np.sin(x[18+24*step]) + L_coxa*m3*np.sin(x[21+24*step]) +
+#             L_femur*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step]) + L_femur*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step]) + L_femur*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step]) +
+#             L_femur*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step]) + L_femur*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step]) + L_femur*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step]) +
+#             Xm1*m1*np.sin(x[6+24*step]) + Xm1*m1*np.sin(x[9+24*step]) + Xm1*m1*np.sin(x[12+24*step]) +
+#             Xm1*m1*np.sin(x[15+24*step]) + Xm1*m1*np.sin(x[18+24*step]) + Xm1*m1*np.sin(x[21+24*step]) +
+#             Xm2*m2*np.cos(x[7+24*step])*np.sin(x[6+24*step]) + Xm2*m2*np.cos(x[10+24*step])*np.sin(x[9+24*step]) + Xm2*m2*np.cos(x[13+24*step])*np.sin(x[12+24*step]) +
+#             Xm2*m2*np.cos(x[16+24*step])*np.sin(x[15+24*step]) + Xm2*m2*np.cos(x[19+24*step])*np.sin(x[18+24*step]) + Xm2*m2*np.cos(x[22+24*step])*np.sin(x[21+24*step]) -
+#             Ym3*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.sin(x[8+24*step]) - Ym3*m3*np.sin(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step]) -
+#             Ym3*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.sin(x[11+24*step]) - Ym3*m3*np.sin(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step]) -
+#             Ym3*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.sin(x[14+24*step]) - Ym3*m3*np.sin(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step]) -
+#             Ym3*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.sin(x[17+24*step]) - Ym3*m3*np.sin(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step]) -
+#             Ym3*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.sin(x[20+24*step]) - Ym3*m3*np.sin(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step]) -
+#             Ym3*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.sin(x[23+24*step]) - Ym3*m3*np.sin(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#
+#         result[step*3+2] = \
+#             x[2+24*step] - x[5+24*step] + \
+#             (m3*(Ym3*np.cos(x[7+24*step] + x[8+24*step]) + L_femur*np.sin(x[7+24*step])) + m3*(Ym3*np.cos(x[10+24*step] + x[11+24*step]) + L_femur*np.sin(x[10+24*step])) +
+#             m3*(Ym3*np.cos(x[13+24*step] + x[14+24*step]) + L_femur*np.sin(x[13+24*step])) + m3*(Ym3*np.cos(x[16+24*step] + x[17+24*step]) + L_femur*np.sin(x[16+24*step])) +
+#             m3*(Ym3*np.cos(x[19+24*step] + x[20+24*step]) + L_femur*np.sin(x[19+24*step])) + m3*(Ym3*np.cos(x[22+24*step] + x[23+24*step]) + L_femur*np.sin(x[22+24*step])) +
+#             Xm2*m2*np.sin(x[7+24*step]) + Xm2*m2*np.sin(x[10+24*step]) + Xm2*m2*np.sin(x[13+24*step]) + Xm2*m2*np.sin(x[16+24*step]) + Xm2*m2*np.sin(x[19+24*step]) + Xm2*m2*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#
+#     return result
+#     #return 0
+#
+# def grad_CoM(x, flag, user_data=None):
+#     if flag:
+#         x_array = np.zeros(54*N)
+#         y_array = np.zeros(54*N)
+#         for step in range(N):
+#             #for the flag matrix, can directly utilize this grad setting. e.g. set arrX=0, arrY=0+24*step ...
+#             x_array[(0+54*step):(54+54*step)] = np.array([0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,0+3*step,
+#                                                           1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,1+3*step,
+#                                                           2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step,2+3*step])
+#             y_array[(0+54*step):(54+54*step)] = np.array([0+24*step,3+24*step,6+24*step,7+24*step,8+24*step,9+24*step,10+24*step,11+24*step,12+24*step,13+24*step,14+24*step,15+24*step,16+24*step,17+24*step,18+24*step,19+24*step,20+24*step,21+24*step,22+24*step,23+24*step,
+#                                 1+24*step,4+24*step,6+24*step,7+24*step,8+24*step,9+24*step,10+24*step,11+24*step,12+24*step,13+24*step,14+24*step,15+24*step,16+24*step,17+24*step,18+24*step,19+24*step,20+24*step,21+24*step,22+24*step,23+24*step,
+#                                 2+24*step,5+24*step,7+24*step,8+24*step,10+24*step,11+24*step,13+24*step,14+24*step,16+24*step,17+24*step,19+24*step,20+24*step,22+24*step,23+24*step])
+#
+#         return (x_array, y_array)
+#
+#     else:
+#         assert len(x) == nvar
+#
+#         #Step should start from 0
+#
+#         grad = np.zeros([54*N])
+#
+#         for step in range(N):
+#             #Step is used by nlopt to add constraint to certain step, should do i=0:N-1 here for all steps
+#             #and change 0, 1, 2 to associated numbers
+#             #In total 54 constraints per step
+#             #The 24 on the right hand side of equilibrium should not be changed to 54 -> it represents the rounds in variable x
+#             grad[0+54*step] = 1.0
+#             grad[1+54*step] = -1.0
+#             grad[2+54*step] = -(L_coxa*m2*np.sin(x[6+24*step]) + L_coxa*m3*np.sin(x[6+24*step]) + Xm1*m1*np.sin(x[6+24*step]) + L_femur*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step]) + Xm2*m2*np.cos(x[7+24*step])*np.sin(x[6+24*step]) - Ym3*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.sin(x[8+24*step]) - Ym3*m3*np.sin(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[3+54*step] = -(L_femur*m3*np.cos(x[6+24*step])*np.sin(x[7+24*step]) + Xm2*m2*np.cos(x[6+24*step])*np.sin(x[7+24*step]) + Ym3*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.cos(x[8+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[4+54*step] = -(Ym3*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.cos(x[8+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[5+54*step] =  -(L_coxa*m2*np.sin(x[9+24*step]) + L_coxa*m3*np.sin(x[9+24*step]) + Xm1*m1*np.sin(x[9+24*step]) + L_femur*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step]) + Xm2*m2*np.cos(x[10+24*step])*np.sin(x[9+24*step]) - Ym3*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.sin(x[11+24*step]) - Ym3*m3*np.sin(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[6+54*step] = -(L_femur*m3*np.cos(x[9+24*step])*np.sin(x[10+24*step]) + Xm2*m2*np.cos(x[9+24*step])*np.sin(x[10+24*step]) + Ym3*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.cos(x[11+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[7+54*step] = -(Ym3*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.cos(x[11+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[8+54*step] = -(L_coxa*m2*np.sin(x[12+24*step]) + L_coxa*m3*np.sin(x[12+24*step]) + Xm1*m1*np.sin(x[12+24*step]) + L_femur*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step]) + Xm2*m2*np.cos(x[13+24*step])*np.sin(x[12+24*step]) - Ym3*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.sin(x[14+24*step]) - Ym3*m3*np.sin(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[9+54*step] = -(L_femur*m3*np.cos(x[12+24*step])*np.sin(x[13+24*step]) + Xm2*m2*np.cos(x[12+24*step])*np.sin(x[13+24*step]) + Ym3*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.cos(x[14+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[10+54*step] = -(Ym3*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.cos(x[14+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[11+54*step] = -(L_coxa*m2*np.sin(x[15+24*step]) + L_coxa*m3*np.sin(x[15+24*step]) + Xm1*m1*np.sin(x[15+24*step]) + L_femur*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step]) + Xm2*m2*np.cos(x[16+24*step])*np.sin(x[15+24*step]) - Ym3*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.sin(x[17+24*step]) - Ym3*m3*np.sin(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[12+54*step] = -(L_femur*m3*np.cos(x[15+24*step])*np.sin(x[16+24*step]) + Xm2*m2*np.cos(x[15+24*step])*np.sin(x[16+24*step]) + Ym3*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.cos(x[17+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[13+54*step] = -(Ym3*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.cos(x[17+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[14+54*step] = -(L_coxa*m2*np.sin(x[18+24*step]) + L_coxa*m3*np.sin(x[18+24*step]) + Xm1*m1*np.sin(x[18+24*step]) + L_femur*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step]) + Xm2*m2*np.cos(x[19+24*step])*np.sin(x[18+24*step]) - Ym3*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.sin(x[20+24*step]) - Ym3*m3*np.sin(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[15+54*step] = -(L_femur*m3*np.cos(x[18+24*step])*np.sin(x[19+24*step]) + Xm2*m2*np.cos(x[18+24*step])*np.sin(x[19+24*step]) + Ym3*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.cos(x[20+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[16+54*step] = -(Ym3*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.cos(x[20+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[17+54*step] = -(L_coxa*m2*np.sin(x[21+24*step]) + L_coxa*m3*np.sin(x[21+24*step]) + Xm1*m1*np.sin(x[21+24*step]) + L_femur*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step]) + Xm2*m2*np.cos(x[22+24*step])*np.sin(x[21+24*step]) - Ym3*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.sin(x[23+24*step]) - Ym3*m3*np.sin(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[18+54*step] = -(L_femur*m3*np.cos(x[21+24*step])*np.sin(x[22+24*step]) + Xm2*m2*np.cos(x[21+24*step])*np.sin(x[22+24*step]) + Ym3*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.cos(x[23+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[19+54*step] = -(Ym3*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.cos(x[23+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[20+54*step] = 1.0
+#             grad[21+54*step] = -1.0
+#             grad[22+54*step] = (L_coxa*m2*np.cos(x[6+24*step]) + L_coxa*m3*np.cos(x[6+24*step]) + Xm1*m1*np.cos(x[6+24*step]) + L_femur*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step]) + Xm2*m2*np.cos(x[6+24*step])*np.cos(x[7+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.sin(x[8+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[23+54*step] = -(L_femur*m3*np.sin(x[6+24*step])*np.sin(x[7+24*step]) + Xm2*m2*np.sin(x[6+24*step])*np.sin(x[7+24*step]) + Ym3*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.cos(x[8+24*step]) - Ym3*m3*np.sin(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[24+54*step] = -(Ym3*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.cos(x[8+24*step]) - Ym3*m3*np.sin(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[25+54*step] = (L_coxa*m2*np.cos(x[9+24*step]) + L_coxa*m3*np.cos(x[9+24*step]) + Xm1*m1*np.cos(x[9+24*step]) + L_femur*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step]) + Xm2*m2*np.cos(x[9+24*step])*np.cos(x[10+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.sin(x[11+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[26+54*step] = -(L_femur*m3*np.sin(x[9+24*step])*np.sin(x[10+24*step]) + Xm2*m2*np.sin(x[9+24*step])*np.sin(x[10+24*step]) + Ym3*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.cos(x[11+24*step]) - Ym3*m3*np.sin(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[27+54*step] = -(Ym3*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.cos(x[11+24*step]) - Ym3*m3*np.sin(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[28+54*step] =  (L_coxa*m2*np.cos(x[12+24*step]) + L_coxa*m3*np.cos(x[12+24*step]) + Xm1*m1*np.cos(x[12+24*step]) + L_femur*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step]) + Xm2*m2*np.cos(x[12+24*step])*np.cos(x[13+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.sin(x[14+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[29+54*step] =  -(L_femur*m3*np.sin(x[12+24*step])*np.sin(x[13+24*step]) + Xm2*m2*np.sin(x[12+24*step])*np.sin(x[13+24*step]) + Ym3*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.cos(x[14+24*step]) - Ym3*m3*np.sin(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[30+54*step] =  -(Ym3*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.cos(x[14+24*step]) - Ym3*m3*np.sin(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[31+54*step] = (L_coxa*m2*np.cos(x[15+24*step]) + L_coxa*m3*np.cos(x[15+24*step]) + Xm1*m1*np.cos(x[15+24*step]) + L_femur*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step]) + Xm2*m2*np.cos(x[15+24*step])*np.cos(x[16+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.sin(x[17+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[32+54*step] = -(L_femur*m3*np.sin(x[15+24*step])*np.sin(x[16+24*step]) + Xm2*m2*np.sin(x[15+24*step])*np.sin(x[16+24*step]) + Ym3*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.cos(x[17+24*step]) - Ym3*m3*np.sin(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[33+54*step] = -(Ym3*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.cos(x[17+24*step]) - Ym3*m3*np.sin(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[34+54*step] = (L_coxa*m2*np.cos(x[18+24*step]) + L_coxa*m3*np.cos(x[18+24*step]) + Xm1*m1*np.cos(x[18+24*step]) + L_femur*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step]) + Xm2*m2*np.cos(x[18+24*step])*np.cos(x[19+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.sin(x[20+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[35+54*step] = -(L_femur*m3*np.sin(x[18+24*step])*np.sin(x[19+24*step]) + Xm2*m2*np.sin(x[18+24*step])*np.sin(x[19+24*step]) + Ym3*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.cos(x[20+24*step]) - Ym3*m3*np.sin(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[36+54*step] = -(Ym3*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.cos(x[20+24*step]) - Ym3*m3*np.sin(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[37+54*step] =  (L_coxa*m2*np.cos(x[21+24*step]) + L_coxa*m3*np.cos(x[21+24*step]) + Xm1*m1*np.cos(x[21+24*step]) + L_femur*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step]) + Xm2*m2*np.cos(x[21+24*step])*np.cos(x[22+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.sin(x[23+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[38+54*step] = -(L_femur*m3*np.sin(x[21+24*step])*np.sin(x[22+24*step]) + Xm2*m2*np.sin(x[21+24*step])*np.sin(x[22+24*step]) + Ym3*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.cos(x[23+24*step]) - Ym3*m3*np.sin(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[39+54*step] = -(Ym3*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.cos(x[23+24*step]) - Ym3*m3*np.sin(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[40+54*step] = 1.0
+#             grad[41+54*step] = -1.0
+#             grad[42+54*step] =  -(m3*(Ym3*np.sin(x[7+24*step] + x[8+24*step]) - L_femur*np.cos(x[7+24*step])) - Xm2*m2*np.cos(x[7+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[43+54*step] = -(Ym3*m3*np.sin(x[7+24*step] + x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[44+54*step] = -(m3*(Ym3*np.sin(x[10+24*step] + x[11+24*step]) - L_femur*np.cos(x[10+24*step])) - Xm2*m2*np.cos(x[10+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[45+54*step] =  -(Ym3*m3*np.sin(x[10+24*step] + x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[46+54*step] = -(m3*(Ym3*np.sin(x[13+24*step] + x[14+24*step]) - L_femur*np.cos(x[13+24*step])) - Xm2*m2*np.cos(x[13+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[47+54*step] =  -(Ym3*m3*np.sin(x[13+24*step] + x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[48+54*step] = -(m3*(Ym3*np.sin(x[16+24*step] + x[17+24*step]) - L_femur*np.cos(x[16+24*step])) - Xm2*m2*np.cos(x[16+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[49+54*step] = -(Ym3*m3*np.sin(x[16+24*step] + x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[50+54*step] = -(m3*(Ym3*np.sin(x[19+24*step] + x[20+24*step]) - L_femur*np.cos(x[19+24*step])) - Xm2*m2*np.cos(x[19+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[51+54*step] = -(Ym3*m3*np.sin(x[19+24*step] + x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[52+54*step] = -(m3*(Ym3*np.sin(x[22+24*step] + x[23+24*step]) - L_femur*np.cos(x[22+24*step])) - Xm2*m2*np.cos(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#             grad[53+54*step] = -(Ym3*m3*np.sin(x[22+24*step] + x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
+#
+#         #grad = np.zeros([54 * N])
+#         return grad
+#
+#         #This CM has nothing to do with body dimension, think about vector summation to convince yourself
 
-        x[1+24*step] - x[4+24*step] + \
-        (L_coxa*m2*np.sin(x[6+24*step]) + L_coxa*m2*np.sin(x[9+24*step]) + L_coxa*m3*np.sin(x[6+24*step]) + L_coxa*m2*np.sin(x[12+24*step]) +
-        L_coxa*m3*np.sin(x[9+24*step]) + L_coxa*m2*np.sin(x[15+24*step]) + L_coxa*m3*np.sin(x[12+24*step]) + L_coxa*m2*np.sin(x[18+24*step]) +
-        L_coxa*m3*np.sin(x[15+24*step]) + L_coxa*m2*np.sin(x[21+24*step]) + L_coxa*m3*np.sin(x[18+24*step]) + L_coxa*m3*np.sin(x[21+24*step]) +
-        L_femur*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step]) + L_femur*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step]) + L_femur*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step]) +
-        L_femur*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step]) + L_femur*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step]) + L_femur*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step]) +
-        Xm1*m1*np.sin(x[6+24*step]) + Xm1*m1*np.sin(x[9+24*step]) + Xm1*m1*np.sin(x[12+24*step]) +
-        Xm1*m1*np.sin(x[15+24*step]) + Xm1*m1*np.sin(x[18+24*step]) + Xm1*m1*np.sin(x[21+24*step]) +
-        Xm2*m2*np.cos(x[7+24*step])*np.sin(x[6+24*step]) + Xm2*m2*np.cos(x[10+24*step])*np.sin(x[9+24*step]) + Xm2*m2*np.cos(x[13+24*step])*np.sin(x[12+24*step]) +
-        Xm2*m2*np.cos(x[16+24*step])*np.sin(x[15+24*step]) + Xm2*m2*np.cos(x[19+24*step])*np.sin(x[18+24*step]) + Xm2*m2*np.cos(x[22+24*step])*np.sin(x[21+24*step]) -
-        Ym3*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.sin(x[8+24*step]) - Ym3*m3*np.sin(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step]) -
-        Ym3*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.sin(x[11+24*step]) - Ym3*m3*np.sin(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step]) -
-        Ym3*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.sin(x[14+24*step]) - Ym3*m3*np.sin(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step]) -
-        Ym3*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.sin(x[17+24*step]) - Ym3*m3*np.sin(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step]) -
-        Ym3*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.sin(x[20+24*step]) - Ym3*m3*np.sin(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step]) -
-        Ym3*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.sin(x[23+24*step]) - Ym3*m3*np.sin(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb),
+#------------------------------------ Constraint 2 -----------------------------------------------------------------
+def r0(result, x, grad):
 
-        x[2+24*step] - x[5+24*step] + \
-        (m3*(Ym3*np.cos(x[7+24*step] + x[8+24*step]) + L_femur*np.sin(x[7+24*step])) + m3*(Ym3*np.cos(x[10+24*step] + x[11+24*step]) + L_femur*np.sin(x[10+24*step])) +
-        m3*(Ym3*np.cos(x[13+24*step] + x[14+24*step]) + L_femur*np.sin(x[13+24*step])) + m3*(Ym3*np.cos(x[16+24*step] + x[17+24*step]) + L_femur*np.sin(x[16+24*step])) +
-        m3*(Ym3*np.cos(x[19+24*step] + x[20+24*step]) + L_femur*np.sin(x[19+24*step])) + m3*(Ym3*np.cos(x[22+24*step] + x[23+24*step]) + L_femur*np.sin(x[22+24*step])) +
-        Xm2*m2*np.sin(x[7+24*step]) + Xm2*m2*np.sin(x[10+24*step]) + Xm2*m2*np.sin(x[13+24*step]) + Xm2*m2*np.sin(x[16+24*step]) + Xm2*m2*np.sin(x[19+24*step]) + Xm2*m2*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)])
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24*N])
+        grad[0, 0] = 1.0
+        grad[1, 1] = 1.0
+        grad[2, 2] = 1.0
 
+    result[:] = np.array([x[0]-r0x, x[1]-r0y, x[2]-r0z])
+    #print("r0 residual is %f %f %f" %(result[0], result[1], result[2]))
     return result
 
-nnzj = 54*N
+def rS(result, x, grad):
+    # rS = r[set 11] for N=21
+    # For N=21, variable set 11 is in the middle, that means (11-1)*24 -> 10*24
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24*N])
+        grad[0, 24*((N-1)/2)+0] = 1.0
+        grad[1, 24*((N-1)/2)+1] = 1.0
+        grad[2, 24*((N-1)/2)+2] = 1.0
 
-def grad_CoM(x, flag, user_data=None):
+    result[:] = np.array([x[24*((N-1)/2)]-rSx, x[24*((N-1)/2)+1]-rSy, x[24*((N-1)/2)+2]-rSz])
+    #print("rS residual is %f %f %f" % (result[0], result[1], result[2]))
+    return result
+
+def rN(result, x, grad):
+
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24*N])
+        grad[0, 24*(N-1)+0] = 1.0
+        grad[1, 24*(N-1)+1] = 1.0
+        grad[2, 24*(N-1)+2] = 1.0
+
+    result[:] = np.array([x[24*(N-1)]-rNx, x[24*(N-1)+1]-rNy, x[24*(N-1)+2]-rNz])
+    #print("rN residual is %f %f %f" % (result[0], result[1], result[2]))
+    return result
+
+def Knot(x, user_data=None):
+    assert len(x) == nvar
+    result = np.array([x[0]-r0x, x[1]-r0y, x[2]-r0z,
+                       x[24*((N-1)/2)]-rSx, x[24*((N-1)/2)+1]-rSy, x[24*((N-1)/2)+2]-rSz,
+                       x[24*(N-1)]-rNx, x[24*(N-1)+1]-rNy, x[24*(N-1)+2]-rNz])
+    return result
+
+def grad_Knot(x, flag, user_data=None):
     if flag:
-        for step in range(5):
-            #for the flag matrix, can directly utilize this grad setting. e.g. set arrX=0, arrY=0+24*step ...
-            x_array = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2])
-            y_array = np.array([0+24*step,3+24*step,6+24*step,7+24*step,8+24*step,9+24*step,10+24*step,11+24*step,12+24*step,13+24*step,14+24*step,15+24*step,16+24*step,17+24*step,18+24*step,19+24*step,20+24*step,21+24*step,22+24*step,23+24*step,
-                                1+24*step,4+24*step,6+24*step,7+24*step,8+24*step,9+24*step,10+24*step,11+24*step,12+24*step,13+24*step,14+24*step,15+24*step,16+24*step,17+24*step,18+24*step,19+24*step,20+24*step,21+24*step,22+24*step,23+24*step,
-                                2+24*step,5+24*step,7+24*step,8+24*step,10+24*step,11+24*step,13+24*step,14+24*step,16+24*step,17+24*step,19+24*step,20+24*step,22+24*step,23+24*step])
-
+        x_array = np.array([0,1,2,3,4,5,6,7,8])
+        y_array = np.array([0,1,2,24*((N-1)/2)+0,24*((N-1)/2)+1,24*((N-1)/2)+2,24*(N-1)+0,24*(N-1)+1,24*(N-1)+2])
         return (x_array, y_array)
 
     else:
         assert len(x) == nvar
+        grad = np.array([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
+    return grad
 
-        #Step should start from 0
-
-        grad = np.zeros([54*N])
-
-        for step in range(5):
-            #Step is used by nlopt to add constraint to certain step, should do i=0:N-1 here for all steps
-            #and change 0, 1, 2 to associated numbers
-            #In total 54 constraints per step
-            #The 24 on the right hand side of equilibrium should not be changed to 54 -> it represents the rounds in variable x
-            grad[0+54*step] = 1.0
-            grad[1+54*step] = -1.0
-            grad[2+54*step] = -(L_coxa*m2*np.sin(x[6+24*step]) + L_coxa*m3*np.sin(x[6+24*step]) + Xm1*m1*np.sin(x[6+24*step]) + L_femur*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step]) + Xm2*m2*np.cos(x[7+24*step])*np.sin(x[6+24*step]) - Ym3*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.sin(x[8+24*step]) - Ym3*m3*np.sin(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[3+54*step] = -(L_femur*m3*np.cos(x[6+24*step])*np.sin(x[7+24*step]) + Xm2*m2*np.cos(x[6+24*step])*np.sin(x[7+24*step]) + Ym3*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.cos(x[8+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[4+54*step] = -(Ym3*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.cos(x[8+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[5+54*step] =  -(L_coxa*m2*np.sin(x[9+24*step]) + L_coxa*m3*np.sin(x[9+24*step]) + Xm1*m1*np.sin(x[9+24*step]) + L_femur*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step]) + Xm2*m2*np.cos(x[10+24*step])*np.sin(x[9+24*step]) - Ym3*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.sin(x[11+24*step]) - Ym3*m3*np.sin(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[6+54*step] = -(L_femur*m3*np.cos(x[9+24*step])*np.sin(x[10+24*step]) + Xm2*m2*np.cos(x[9+24*step])*np.sin(x[10+24*step]) + Ym3*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.cos(x[11+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[7+54*step] = -(Ym3*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.cos(x[11+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[8+54*step] = -(L_coxa*m2*np.sin(x[12+24*step]) + L_coxa*m3*np.sin(x[12+24*step]) + Xm1*m1*np.sin(x[12+24*step]) + L_femur*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step]) + Xm2*m2*np.cos(x[13+24*step])*np.sin(x[12+24*step]) - Ym3*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.sin(x[14+24*step]) - Ym3*m3*np.sin(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[9+54*step] = -(L_femur*m3*np.cos(x[12+24*step])*np.sin(x[13+24*step]) + Xm2*m2*np.cos(x[12+24*step])*np.sin(x[13+24*step]) + Ym3*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.cos(x[14+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[10+54*step] = -(Ym3*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.cos(x[14+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[11+54*step] = -(L_coxa*m2*np.sin(x[15+24*step]) + L_coxa*m3*np.sin(x[15+24*step]) + Xm1*m1*np.sin(x[15+24*step]) + L_femur*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step]) + Xm2*m2*np.cos(x[16+24*step])*np.sin(x[15+24*step]) - Ym3*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.sin(x[17+24*step]) - Ym3*m3*np.sin(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[12+54*step] = -(L_femur*m3*np.cos(x[15+24*step])*np.sin(x[16+24*step]) + Xm2*m2*np.cos(x[15+24*step])*np.sin(x[16+24*step]) + Ym3*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.cos(x[17+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[13+54*step] = -(Ym3*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.cos(x[17+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[14+54*step] = -(L_coxa*m2*np.sin(x[18+24*step]) + L_coxa*m3*np.sin(x[18+24*step]) + Xm1*m1*np.sin(x[18+24*step]) + L_femur*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step]) + Xm2*m2*np.cos(x[19+24*step])*np.sin(x[18+24*step]) - Ym3*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.sin(x[20+24*step]) - Ym3*m3*np.sin(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[15+54*step] = -(L_femur*m3*np.cos(x[18+24*step])*np.sin(x[19+24*step]) + Xm2*m2*np.cos(x[18+24*step])*np.sin(x[19+24*step]) + Ym3*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.cos(x[20+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[16+54*step] = -(Ym3*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.cos(x[20+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[17+54*step] = -(L_coxa*m2*np.sin(x[21+24*step]) + L_coxa*m3*np.sin(x[21+24*step]) + Xm1*m1*np.sin(x[21+24*step]) + L_femur*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step]) + Xm2*m2*np.cos(x[22+24*step])*np.sin(x[21+24*step]) - Ym3*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.sin(x[23+24*step]) - Ym3*m3*np.sin(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[18+54*step] = -(L_femur*m3*np.cos(x[21+24*step])*np.sin(x[22+24*step]) + Xm2*m2*np.cos(x[21+24*step])*np.sin(x[22+24*step]) + Ym3*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.cos(x[23+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[19+54*step] = -(Ym3*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.cos(x[23+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[20+54*step] = 1.0
-            grad[21+54*step] = -1.0
-            grad[22+54*step] = (L_coxa*m2*np.cos(x[6+24*step]) + L_coxa*m3*np.cos(x[6+24*step]) + Xm1*m1*np.cos(x[6+24*step]) + L_femur*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step]) + Xm2*m2*np.cos(x[6+24*step])*np.cos(x[7+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.sin(x[8+24*step]) - Ym3*m3*np.cos(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[23+54*step] = -(L_femur*m3*np.sin(x[6+24*step])*np.sin(x[7+24*step]) + Xm2*m2*np.sin(x[6+24*step])*np.sin(x[7+24*step]) + Ym3*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.cos(x[8+24*step]) - Ym3*m3*np.sin(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[24+54*step] = -(Ym3*m3*np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.cos(x[8+24*step]) - Ym3*m3*np.sin(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[25+54*step] = (L_coxa*m2*np.cos(x[9+24*step]) + L_coxa*m3*np.cos(x[9+24*step]) + Xm1*m1*np.cos(x[9+24*step]) + L_femur*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step]) + Xm2*m2*np.cos(x[9+24*step])*np.cos(x[10+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.sin(x[11+24*step]) - Ym3*m3*np.cos(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[26+54*step] = -(L_femur*m3*np.sin(x[9+24*step])*np.sin(x[10+24*step]) + Xm2*m2*np.sin(x[9+24*step])*np.sin(x[10+24*step]) + Ym3*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.cos(x[11+24*step]) - Ym3*m3*np.sin(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[27+54*step] = -(Ym3*m3*np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.cos(x[11+24*step]) - Ym3*m3*np.sin(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[28+54*step] =  (L_coxa*m2*np.cos(x[12+24*step]) + L_coxa*m3*np.cos(x[12+24*step]) + Xm1*m1*np.cos(x[12+24*step]) + L_femur*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step]) + Xm2*m2*np.cos(x[12+24*step])*np.cos(x[13+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.sin(x[14+24*step]) - Ym3*m3*np.cos(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[29+54*step] =  -(L_femur*m3*np.sin(x[12+24*step])*np.sin(x[13+24*step]) + Xm2*m2*np.sin(x[12+24*step])*np.sin(x[13+24*step]) + Ym3*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.cos(x[14+24*step]) - Ym3*m3*np.sin(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[30+54*step] =  -(Ym3*m3*np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.cos(x[14+24*step]) - Ym3*m3*np.sin(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[31+54*step] = (L_coxa*m2*np.cos(x[15+24*step]) + L_coxa*m3*np.cos(x[15+24*step]) + Xm1*m1*np.cos(x[15+24*step]) + L_femur*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step]) + Xm2*m2*np.cos(x[15+24*step])*np.cos(x[16+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.sin(x[17+24*step]) - Ym3*m3*np.cos(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[32+54*step] = -(L_femur*m3*np.sin(x[15+24*step])*np.sin(x[16+24*step]) + Xm2*m2*np.sin(x[15+24*step])*np.sin(x[16+24*step]) + Ym3*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.cos(x[17+24*step]) - Ym3*m3*np.sin(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[33+54*step] = -(Ym3*m3*np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.cos(x[17+24*step]) - Ym3*m3*np.sin(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[34+54*step] = (L_coxa*m2*np.cos(x[18+24*step]) + L_coxa*m3*np.cos(x[18+24*step]) + Xm1*m1*np.cos(x[18+24*step]) + L_femur*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step]) + Xm2*m2*np.cos(x[18+24*step])*np.cos(x[19+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.sin(x[20+24*step]) - Ym3*m3*np.cos(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[35+54*step] = -(L_femur*m3*np.sin(x[18+24*step])*np.sin(x[19+24*step]) + Xm2*m2*np.sin(x[18+24*step])*np.sin(x[19+24*step]) + Ym3*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.cos(x[20+24*step]) - Ym3*m3*np.sin(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[36+54*step] = -(Ym3*m3*np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.cos(x[20+24*step]) - Ym3*m3*np.sin(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[37+54*step] =  (L_coxa*m2*np.cos(x[21+24*step]) + L_coxa*m3*np.cos(x[21+24*step]) + Xm1*m1*np.cos(x[21+24*step]) + L_femur*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step]) + Xm2*m2*np.cos(x[21+24*step])*np.cos(x[22+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.sin(x[23+24*step]) - Ym3*m3*np.cos(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[38+54*step] = -(L_femur*m3*np.sin(x[21+24*step])*np.sin(x[22+24*step]) + Xm2*m2*np.sin(x[21+24*step])*np.sin(x[22+24*step]) + Ym3*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.cos(x[23+24*step]) - Ym3*m3*np.sin(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[39+54*step] = -(Ym3*m3*np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.cos(x[23+24*step]) - Ym3*m3*np.sin(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[40+54*step] = 1.0
-            grad[41+54*step] = -1.0
-            grad[42+54*step] =  -(m3*(Ym3*np.sin(x[7+24*step] + x[8+24*step]) - L_femur*np.cos(x[7+24*step])) - Xm2*m2*np.cos(x[7+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[43+54*step] = -(Ym3*m3*np.sin(x[7+24*step] + x[8+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[44+54*step] = -(m3*(Ym3*np.sin(x[10+24*step] + x[11+24*step]) - L_femur*np.cos(x[10+24*step])) - Xm2*m2*np.cos(x[10+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[45+54*step] =  -(Ym3*m3*np.sin(x[10+24*step] + x[11+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[46+54*step] = -(m3*(Ym3*np.sin(x[13+24*step] + x[14+24*step]) - L_femur*np.cos(x[13+24*step])) - Xm2*m2*np.cos(x[13+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[47+54*step] =  -(Ym3*m3*np.sin(x[13+24*step] + x[14+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[48+54*step] = -(m3*(Ym3*np.sin(x[16+24*step] + x[17+24*step]) - L_femur*np.cos(x[16+24*step])) - Xm2*m2*np.cos(x[16+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[49+54*step] = -(Ym3*m3*np.sin(x[16+24*step] + x[17+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[50+54*step] = -(m3*(Ym3*np.sin(x[19+24*step] + x[20+24*step]) - L_femur*np.cos(x[19+24*step])) - Xm2*m2*np.cos(x[19+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[51+54*step] = -(Ym3*m3*np.sin(x[19+24*step] + x[20+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[52+54*step] = -(m3*(Ym3*np.sin(x[22+24*step] + x[23+24*step]) - L_femur*np.cos(x[22+24*step])) - Xm2*m2*np.cos(x[22+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-            grad[53+54*step] = -(Ym3*m3*np.sin(x[22+24*step] + x[23+24*step]))/(6*m1 + 6*m2 + 6*m3 + mb)
-
-            #This CM has nothing to do with body dimension, think about vector summation to convince yourself
-
-# #------------------------------------ Constraint 2 -----------------------------------------------------------------
-# def r0(result, x, grad):
-#
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24*N])
-#         grad[0, 0] = 1.0
-#         grad[1, 1] = 1.0
-#         grad[2, 2] = 1.0
-#
-#     result[:] = np.array([x[0]-r0x, x[1]-r0y, x[2]-r0z])
-#     #print("r0 residual is %f %f %f" %(result[0], result[1], result[2]))
-#     return result
-#
-# def rS(result, x, grad):
-#     # rS = r[set 11] for N=21
-#     # For N=21, variable set 11 is in the middle, that means (11-1)*24 -> 10*24
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24*N])
-#         grad[0, 24*((N-1)/2)+0] = 1.0
-#         grad[1, 24*((N-1)/2)+1] = 1.0
-#         grad[2, 24*((N-1)/2)+2] = 1.0
-#
-#     result[:] = np.array([x[24*((N-1)/2)]-rSx, x[24*((N-1)/2)+1]-rSy, x[24*((N-1)/2)+2]-rSz])
-#     #print("rS residual is %f %f %f" % (result[0], result[1], result[2]))
-#     return result
-#
-# def rN(result, x, grad):
-#
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24*N])
-#         grad[0, 24*(N-1)+0] = 1.0
-#         grad[1, 24*(N-1)+1] = 1.0
-#         grad[2, 24*(N-1)+2] = 1.0
-#
-#     result[:] = np.array([x[24*(N-1)]-rNx, x[24*(N-1)+1]-rNy, x[24*(N-1)+2]-rNz])
-#     #print("rN residual is %f %f %f" % (result[0], result[1], result[2]))
-#     return result
-#
 # #------------------------------------ Constraint 3 -----------------------------------------------------------------
 # def leg1_end_point_XYZ(result, x, grad, step, px, py, pz):
 #
@@ -1639,6 +1667,19 @@ def grad_CoM(x, flag, user_data=None):
 #     return [resultRF, resultRM, resultRR, resultLR, resultLM, resultLF]
 
 #----------------------------------objective------------------------------------------------------------------------
+def eval_f(x, user_data = None):
+    assert len(x) == nvar
+    return x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2]
+
+def eval_grad_f(x, user_data = None):
+    assert len(x) == nvar
+    grad_f = np.array([0.0] * (24 * N))
+    grad_f[0] =	x[0] * x[3] + x[3] * (x[0] + x[1] + x[2])
+    grad_f[1] = x[0] * x[3]
+    grad_f[2] = x[0] * x[3] + 1.0
+    grad_f[3] = x[0] * (x[0] + x[1] + x[2])
+    return grad_f
+
 W_coxa = 5
 W_femur = 5
 W_tibia = 5
@@ -1804,75 +1845,76 @@ def grad_objective(x, user_data=None):
 
 ##############################################  initial values ##################################################
 
-ini = [0.0]*(24*N)
+ini = np.array([0.0]*(24*N))
 
-# RF_coxa_nominal = 60.0/180.0*np.pi
-# RM_coxa_nominal = 0.0
-# RR_coxa_nominal = -60.0/180.0*np.pi
-# LR_coxa_nominal = 240.0/180.0*np.pi
-# LM_coxa_nominal = 180.0/180.0*np.pi
-# LF_coxa_nominal = 120.0/180.0*np.pi
-# femur_nominal = np.pi/4   #45deg
-# tibia_nominal = -np.pi/3  #-60deg
-#
-# for i in range(N):
-#     # RF
-#     ini[6 + 24 * i] = RF_coxa_nominal
-#     ini[7 + 24 * i] = femur_nominal
-#     ini[8 + 24 * i] = tibia_nominal
-#
-#     # RM
-#     ini[9 + 24 * i] = RM_coxa_nominal
-#     ini[10 + 24 * i] = femur_nominal
-#     ini[11 + 24 * i] = tibia_nominal
-#
-#     # RR
-#     ini[12 + 24 * i] = RR_coxa_nominal
-#     ini[13 + 24 * i] = femur_nominal
-#     ini[14 + 24 * i] = tibia_nominal
-#
-#     # LR
-#     ini[15 + 24 * i] = LR_coxa_nominal
-#     ini[16 + 24 * i] = femur_nominal
-#     ini[17 + 24 * i] = tibia_nominal
-#
-#     # LM
-#     ini[18 + 24 * i] = LM_coxa_nominal
-#     ini[19 + 24 * i] = femur_nominal
-#     ini[20 + 24 * i] = tibia_nominal
-#
-#     # LF
-#     ini[21 + 24 * i] = LF_coxa_nominal
-#     ini[22 + 24 * i] = femur_nominal
-#     ini[23 + 24 * i] = tibia_nominal
-#
-# for i in range((N-1)/2):
-#     ini[0 + 24 * i] = r0x
-#     ini[1 + 24 * i] = r0y
-#     ini[2 + 24 * i] = r0z
-#     ini[3 + 24 * i] = r0x
-#     ini[4 + 24 * i] = r0y
-#     ini[5 + 24 * i] = r0z
-#
-# for i in range((N-1)/2, N):
-#     ini[0 + 24 * i] = rNx
-#     ini[1 + 24 * i] = rNy
-#     ini[2 + 24 * i] = rNz
-#     ini[3 + 24 * i] = rNx
-#     ini[4 + 24 * i] = rNy
-#     ini[5 + 24 * i] = rNz
-#
-# ini[0] = r0x
-# ini[1] = r0y
-# ini[2] = r0z
-#
-# ini[24*((N-1)/2-1)+0] = rSx
-# ini[24*((N-1)/2-1)+1] = rSy
-# ini[24*((N-1)/2-1)+2] = rSz
-#
-# ini[24*(N-1)+0] = rNx
-# ini[24*(N-1)+1] = rNy
-# ini[24*(N-1)+2] = rNz
+RF_coxa_nominal = 60.0/180.0*np.pi
+RM_coxa_nominal = 0.0
+RR_coxa_nominal = -60.0/180.0*np.pi
+LR_coxa_nominal = 240.0/180.0*np.pi
+LM_coxa_nominal = 180.0/180.0*np.pi
+LF_coxa_nominal = 120.0/180.0*np.pi
+femur_nominal = np.pi/4   #45deg
+tibia_nominal = -np.pi/3  #-60deg
+
+
+for i in range(N):
+    # RF
+    ini[6 + 24 * i] = RF_coxa_nominal
+    ini[7 + 24 * i] = femur_nominal
+    ini[8 + 24 * i] = tibia_nominal
+
+    # RM
+    ini[9 + 24 * i] = RM_coxa_nominal
+    ini[10 + 24 * i] = femur_nominal
+    ini[11 + 24 * i] = tibia_nominal
+
+    # RR
+    ini[12 + 24 * i] = RR_coxa_nominal
+    ini[13 + 24 * i] = femur_nominal
+    ini[14 + 24 * i] = tibia_nominal
+
+    # LR
+    ini[15 + 24 * i] = LR_coxa_nominal
+    ini[16 + 24 * i] = femur_nominal
+    ini[17 + 24 * i] = tibia_nominal
+
+    # LM
+    ini[18 + 24 * i] = LM_coxa_nominal
+    ini[19 + 24 * i] = femur_nominal
+    ini[20 + 24 * i] = tibia_nominal
+
+    # LF
+    ini[21 + 24 * i] = LF_coxa_nominal
+    ini[22 + 24 * i] = femur_nominal
+    ini[23 + 24 * i] = tibia_nominal
+
+for i in range((N-1)/2):
+    ini[0 + 24 * i] = r0x
+    ini[1 + 24 * i] = r0y
+    ini[2 + 24 * i] = r0z
+    ini[3 + 24 * i] = r0x
+    ini[4 + 24 * i] = r0y
+    ini[5 + 24 * i] = r0z
+
+for i in range((N-1)/2, N):
+    ini[0 + 24 * i] = rNx
+    ini[1 + 24 * i] = rNy
+    ini[2 + 24 * i] = rNz
+    ini[3 + 24 * i] = rNx
+    ini[4 + 24 * i] = rNy
+    ini[5 + 24 * i] = rNz
+
+ini[0] = r0x
+ini[1] = r0y
+ini[2] = r0z
+
+ini[24*((N-1)/2-1)+0] = rSx
+ini[24*((N-1)/2-1)+1] = rSy
+ini[24*((N-1)/2-1)+2] = rSz
+
+ini[24*(N-1)+0] = rNx
+ini[24*(N-1)+1] = rNy
+ini[24*(N-1)+2] = rNz
 
 ##############################################  Bounds ##########################################################
 
@@ -1894,37 +1936,53 @@ femurLowerBound = -np.pi/2
 tibiaUpperBound = np.pi/2
 tibiaLowerBound = -np.pi/2
 
-x_L = [xUpperBound, yUpperBound, zUpperBound,
+xUpperBound = 3000.0
+xLowerBound = 0.0
+yUpperBound = 4000.0
+yLowerBound = 0.0
+zUpperBound = 500.0
+zLowerBound = -10.0
+
+x_U = np.array([xUpperBound, yUpperBound, zUpperBound,
               xUpperBound, yUpperBound, zUpperBound,
               coxaUpperBound_RF, femurUpperBound, tibiaUpperBound,
               coxaUpperBound_RM, femurUpperBound, tibiaUpperBound,
               coxaUpperBound_RR, femurUpperBound, tibiaUpperBound,
               coxaUpperBound_LR, femurUpperBound, tibiaUpperBound,
               coxaUpperBound_LM, femurUpperBound, tibiaUpperBound,
-              coxaUpperBound_LF, femurUpperBound, tibiaUpperBound]*N
+              coxaUpperBound_LF, femurUpperBound, tibiaUpperBound]*N)
 
-x_U = [xLowerBound, yLowerBound, zLowerBound,
+x_L = np.array([xLowerBound, yLowerBound, zLowerBound,
               xLowerBound, yLowerBound, zLowerBound,
               coxaLowerBound_RF, femurLowerBound, tibiaLowerBound,
               coxaLowerBound_RM, femurLowerBound, tibiaLowerBound,
               coxaLowerBound_RR, femurLowerBound, tibiaLowerBound,
               coxaLowerBound_LR, femurLowerBound, tibiaLowerBound,
               coxaLowerBound_LM, femurLowerBound, tibiaLowerBound,
-              coxaLowerBound_LF, femurLowerBound, tibiaLowerBound]*N
+              coxaLowerBound_LF, femurLowerBound, tibiaLowerBound]*N)
 
-ncon = 3   #Test for CoM constraint
-g_L = np.array([-1e-2, -1e-2])
-g_U = np.array([1e-2, 1e-2])
+ncon = 3*N   #Test for CoM constraint
+ncon = 9     #Test for Knot constraint
+g_L = np.array([-1]*ncon)    #I think there is something wrong with the constraint 1, since I do -10000000 and 1000000 and still doesn't work
+g_U = np.array([1]*ncon)
 
-nnzh = 100
+nnzh = 0
 
-nlp = pyipopt.create(nvar, x_L, x_U, ncon, g_L, g_U, nnzj, nnzh, objective, grad_objective, CoM, grad_CoM)
+nnzj = 54*N  #Test for CoM constraint
+nnzj = 9  #Test for Knot constraint
 
-nlp.num_option('tol', 1e-8)
+#nlp = pyipopt.create(nvar, x_L, x_U, ncon, g_L, g_U, nnzj, nnzh, objective, grad_objective, CoM, grad_CoM)
+nlp = pyipopt.create(nvar, x_L, x_U, ncon, g_L, g_U, nnzj, nnzh, objective, grad_objective, Knot, grad_Knot)
+#nlp = pyipopt.create(nvar, x_L, x_U, ncon, g_L, g_U, nnzj, nnzh, eval_f, eval_grad_f, CoM, grad_CoM)
+
+nlp.num_option('tol', 1e-4)
 
 x, zl, zu, constraint_multipliers, obj, status = nlp.solve(ini)
 
 nlp.close()
+
+print "Objective value"
+print "f(x*) =", obj
 
 # # Constraint 1: One 3-D vector equality constraints speaking c = function(theta, p)
 # for i in range(N):

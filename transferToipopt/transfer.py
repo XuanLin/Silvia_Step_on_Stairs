@@ -540,296 +540,732 @@ rSz = (r0z + rNz)/2.0
 #         #This CM has nothing to do with body dimension, think about vector summation to convince yourself
 
 #------------------------------------ Constraint 2 -----------------------------------------------------------------
-def r0(result, x, grad):
+# def r0(result, x, grad):
+#
+#     if grad.size > 0:
+#         grad[:] = np.zeros([3, 24*N])
+#         grad[0, 0] = 1.0
+#         grad[1, 1] = 1.0
+#         grad[2, 2] = 1.0
+#
+#     result[:] = np.array([x[0]-r0x, x[1]-r0y, x[2]-r0z])
+#     #print("r0 residual is %f %f %f" %(result[0], result[1], result[2]))
+#     return result
+#
+# def rS(result, x, grad):
+#     # rS = r[set 11] for N=21
+#     # For N=21, variable set 11 is in the middle, that means (11-1)*24 -> 10*24
+#     if grad.size > 0:
+#         grad[:] = np.zeros([3, 24*N])
+#         grad[0, 24*((N-1)/2)+0] = 1.0
+#         grad[1, 24*((N-1)/2)+1] = 1.0
+#         grad[2, 24*((N-1)/2)+2] = 1.0
+#
+#     result[:] = np.array([x[24*((N-1)/2)]-rSx, x[24*((N-1)/2)+1]-rSy, x[24*((N-1)/2)+2]-rSz])
+#     #print("rS residual is %f %f %f" % (result[0], result[1], result[2]))
+#     return result
+#
+# def rN(result, x, grad):
+#
+#     if grad.size > 0:
+#         grad[:] = np.zeros([3, 24*N])
+#         grad[0, 24*(N-1)+0] = 1.0
+#         grad[1, 24*(N-1)+1] = 1.0
+#         grad[2, 24*(N-1)+2] = 1.0
+#
+#     result[:] = np.array([x[24*(N-1)]-rNx, x[24*(N-1)+1]-rNy, x[24*(N-1)+2]-rNz])
+#     #print("rN residual is %f %f %f" % (result[0], result[1], result[2]))
+#     return result
+#
+# def Knot(x, user_data=None):
+#     assert len(x) == nvar
+#     result = np.array([x[0]-r0x, x[1]-r0y, x[2]-r0z,
+#                        x[24*((N-1)/2)]-rSx, x[24*((N-1)/2)+1]-rSy, x[24*((N-1)/2)+2]-rSz,
+#                        x[24*(N-1)]-rNx, x[24*(N-1)+1]-rNy, x[24*(N-1)+2]-rNz])
+#     return result
+#
+# def grad_Knot(x, flag, user_data=None):
+#     if flag:
+#         x_array = np.array([0,1,2,3,4,5,6,7,8])
+#         y_array = np.array([0,1,2,24*((N-1)/2)+0,24*((N-1)/2)+1,24*((N-1)/2)+2,24*(N-1)+0,24*(N-1)+1,24*(N-1)+2])
+#         return (x_array, y_array)
+#
+#     else:
+#         assert len(x) == nvar
+#         grad = np.array([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
+#     return grad
 
-    if grad.size > 0:
-        grad[:] = np.zeros([3, 24*N])
-        grad[0, 0] = 1.0
-        grad[1, 1] = 1.0
-        grad[2, 2] = 1.0
+#------------------------------------ Constraint 3 -----------------------------------------------------------------
 
-    result[:] = np.array([x[0]-r0x, x[1]-r0y, x[2]-r0z])
-    #print("r0 residual is %f %f %f" %(result[0], result[1], result[2]))
-    return result
+p_RF = np.zeros(3,N)
+p_RM = np.zeros(3,N)
+p_RR = np.zeros(3,N)
+p_LR = np.zeros(3,N)
+p_LM = np.zeros(3,N)
+p_LF = np.zeros(3,N)
 
-def rS(result, x, grad):
-    # rS = r[set 11] for N=21
-    # For N=21, variable set 11 is in the middle, that means (11-1)*24 -> 10*24
-    if grad.size > 0:
-        grad[:] = np.zeros([3, 24*N])
-        grad[0, 24*((N-1)/2)+0] = 1.0
-        grad[1, 24*((N-1)/2)+1] = 1.0
-        grad[2, 24*((N-1)/2)+2] = 1.0
+for step in range(N):
+    if step < (N-1)/2:
+        p_RF[:, step] = footstep_1_RF[:]
+        p_RM[:, step] = footstep_1_RM[:]
+        p_RR[:, step] = footstep_1_RR[:]
+        p_LR[:, step] = footstep_1_LR[:]
+        p_LM[:, step] = footstep_1_LM[:]
+        p_LF[:, step] = footstep_1_LF[:]
+    else:
+        p_RF[:, step] = footstep_2_RF[:]
+        p_RM[:, step] = footstep_2_RM[:]
+        p_RR[:, step] = footstep_2_RR[:]
+        p_LR[:, step] = footstep_2_LR[:]
+        p_LM[:, step] = footstep_2_LM[:]
+        p_LF[:, step] = footstep_2_LF[:]
 
-    result[:] = np.array([x[24*((N-1)/2)]-rSx, x[24*((N-1)/2)+1]-rSy, x[24*((N-1)/2)+2]-rSz])
-    #print("rS residual is %f %f %f" % (result[0], result[1], result[2]))
-    return result
-
-def rN(result, x, grad):
-
-    if grad.size > 0:
-        grad[:] = np.zeros([3, 24*N])
-        grad[0, 24*(N-1)+0] = 1.0
-        grad[1, 24*(N-1)+1] = 1.0
-        grad[2, 24*(N-1)+2] = 1.0
-
-    result[:] = np.array([x[24*(N-1)]-rNx, x[24*(N-1)+1]-rNy, x[24*(N-1)+2]-rNz])
-    #print("rN residual is %f %f %f" % (result[0], result[1], result[2]))
-    return result
-
-def Knot(x, user_data=None):
+def leg_end_point_XYZ(x, user_data=None):
     assert len(x) == nvar
-    result = np.array([x[0]-r0x, x[1]-r0y, x[2]-r0z,
-                       x[24*((N-1)/2)]-rSx, x[24*((N-1)/2)+1]-rSy, x[24*((N-1)/2)+2]-rSz,
-                       x[24*(N-1)]-rNx, x[24*(N-1)+1]-rNy, x[24*(N-1)+2]-rNz])
+    result = np.zeros(3*6*N)
+    for step in range(N):
+        result[(0+18*step):(18+18*step)] = np.array([
+
+        #-------------------------------------  leg1  ------------------------------------------------------
+        x[0 + 24 * step] - p_RF[0, step] +
+        L_coxa * np.cos(x[6 + 24 * step]) + L_tibia * (
+                    np.cos(x[6 + 24 * step]) * np.cos(x[7 + 24 * step]) * np.sin(x[8 + 24 * step]) + np.cos(
+                x[6 + 24 * step]) * np.cos(x[8 + 24 * step]) * np.sin(x[7 + 24 * step])) +
+        L_femur * np.cos(x[6 + 24 * step]) * np.cos(x[7 + 24 * step]) + x_body_front_half,
+
+        x[1 + 24 * step] - p_RF[1, step] +
+        L_coxa * np.sin(x[6 + 24 * step]) + L_tibia * (
+                    np.cos(x[7 + 24 * step]) * np.sin(x[6 + 24 * step]) * np.sin(x[8 + 24 * step]) + np.sin(
+                x[6 + 24 * step]) * np.cos(x[8 + 24 * step]) * np.sin(x[7 + 24 * step])) +
+        L_femur * np.cos(x[7 + 24 * step]) * np.sin(x[6 + 24 * step]) + y_body_half,
+
+        x[2 + 24 * step] - p_RF[2, step] +
+        L_femur * np.sin(x[7 + 24 * step]) - L_tibia * (
+                    np.cos(x[7 + 24 * step]) * np.cos(x[8 + 24 * step]) - np.sin(x[7 + 24 * step]) * np.sin(
+                x[8 + 24 * step])),
+
+        # -------------------------------------  leg2  ------------------------------------------------------
+        x[0 + 24 * step] - p_RM[0, step] +
+        L_coxa * np.cos(x[9 + 24 * step]) + L_tibia * (
+                    np.cos(x[9 + 24 * step]) * np.cos(x[10 + 24 * step]) * np.sin(x[11 + 24 * step]) + np.cos(
+                x[9 + 24 * step]) * np.cos(x[11 + 24 * step]) * np.sin(x[10 + 24 * step])) +
+        L_femur * np.cos(x[9 + 24 * step]) * np.cos(x[10 + 24 * step]) + x_body_mid_half,
+
+        x[1 + 24 * step] - p_RM[1, step] +
+        L_coxa * np.sin(x[9 + 24 * step]) + L_tibia * (
+                    np.cos(x[10 + 24 * step]) * np.sin(x[9 + 24 * step]) * np.sin(x[11 + 24 * step]) + np.sin(
+                x[9 + 24 * step]) * np.cos(x[11 + 24 * step]) * np.sin(x[10 + 24 * step])) +
+        L_femur * np.cos(x[10 + 24 * step]) * np.sin(x[9 + 24 * step]),
+
+        x[2 + 24 * step] - p_RM[2, step] +
+        L_femur * np.sin(x[10 + 24 * step]) - L_tibia * (
+                    np.cos(x[10 + 24 * step]) * np.cos(x[11 + 24 * step]) - np.sin(x[10 + 24 * step]) * np.sin(
+                x[11 + 24 * step])),
+
+        # -------------------------------------  leg3  ------------------------------------------------------
+        x[0 + 24 * step] - p_RR[0, step] +
+        L_coxa * np.cos(x[12 + 24 * step]) + L_tibia * (
+                    np.cos(x[12 + 24 * step]) * np.cos(x[13 + 24 * step]) * np.sin(x[14 + 24 * step]) + np.cos(
+                x[12 + 24 * step]) * np.cos(x[14 + 24 * step]) * np.sin(x[13 + 24 * step])) +
+        L_femur * np.cos(x[12 + 24 * step]) * np.cos(x[13 + 24 * step]) + x_body_front_half,
+
+        x[1 + 24 * step] - p_RR[1, step] +
+        L_coxa * np.sin(x[12 + 24 * step]) + L_tibia * (
+                    np.cos(x[13 + 24 * step]) * np.sin(x[12 + 24 * step]) * np.sin(x[14 + 24 * step]) + np.sin(
+                x[12 + 24 * step]) * np.cos(x[14 + 24 * step]) * np.sin(x[13 + 24 * step])) +
+        L_femur * np.cos(x[13 + 24 * step]) * np.sin(x[12 + 24 * step]) - y_body_half,
+
+        x[2 + 24 * step] - p_RR[2, step]] +
+        L_femur * np.sin(x[13 + 24 * step]) - L_tibia * (
+                    np.cos(x[13 + 24 * step]) * np.cos(x[14 + 24 * step]) - np.sin(x[13 + 24 * step]) * np.sin(
+                x[14 + 24 * step])),
+
+        # -------------------------------------  leg4  ------------------------------------------------------
+        x[0 + 24 * step] - p_LR[0, step] +
+        L_coxa * np.cos(x[15 + 24 * step]) + L_tibia * (
+                    np.cos(x[15 + 24 * step]) * np.cos(x[16 + 24 * step]) * np.sin(x[17 + 24 * step]) + np.cos(
+                x[15 + 24 * step]) * np.cos(x[17 + 24 * step]) * np.sin(x[16 + 24 * step])) +
+        L_femur * np.cos(x[15 + 24 * step]) * np.cos(x[16 + 24 * step]) - x_body_front_half,
+
+        x[1 + 24 * step] - p_LR[1, step] +
+        L_coxa * np.sin(x[15 + 24 * step]) + L_tibia * (
+                    np.cos(x[16 + 24 * step]) * np.sin(x[15 + 24 * step]) * np.sin(x[17 + 24 * step]) + np.sin(
+                x[15 + 24 * step]) * np.cos(x[17 + 24 * step]) * np.sin(x[16 + 24 * step])) +
+        L_femur * np.cos(x[16 + 24 * step]) * np.sin(x[15 + 24 * step]) - y_body_half,
+
+        x[2 + 24 * step] - p_LR[2, step] +
+        L_femur * np.sin(x[16 + 24 * step]) - L_tibia * (
+                    np.cos(x[16 + 24 * step]) * np.cos(x[17 + 24 * step]) - np.sin(x[16 + 24 * step]) * np.sin(
+                x[17 + 24 * step])),
+
+
+        # -------------------------------------  leg5  ------------------------------------------------------
+        x[0 + 24 * step] - p_LM[0, step] +
+        L_coxa * np.cos(x[18 + 24 * step]) +
+        L_tibia * (np.cos(x[18 + 24 * step]) * np.cos(x[19 + 24 * step]) * np.sin(x[20 + 24 * step]) + np.cos(
+            x[18 + 24 * step]) * np.cos(x[20 + 24 * step]) * np.sin(x[19 + 24 * step])) +
+        L_femur * np.cos(x[18 + 24 * step]) * np.cos(x[19 + 24 * step]) - x_body_mid_half,
+
+        x[1 + 24 * step] - p_LM[1, step] +
+        L_coxa * np.sin(x[18 + 24 * step]) + L_tibia * (
+                    np.cos(x[19 + 24 * step]) * np.sin(x[18 + 24 * step]) * np.sin(x[20 + 24 * step]) + np.sin(
+                x[18 + 24 * step]) * np.cos(x[20 + 24 * step]) * np.sin(x[19 + 24 * step])) +
+        L_femur * np.cos(x[19 + 24 * step]) * np.sin(x[18 + 24 * step]),
+
+        x[2 + 24 * step] - p_LM[2, step] +
+        L_femur * np.sin(x[19 + 24 * step]) - L_tibia * (
+                    np.cos(x[19 + 24 * step]) * np.cos(x[20 + 24 * step]) - np.sin(x[19 + 24 * step]) * np.sin(
+                x[20 + 24 * step])),
+
+        # -------------------------------------  leg6  ------------------------------------------------------
+
+        x[0 + 24 * step] - p_LF[0, step] +
+        L_coxa * np.cos(x[21 + 24 * step]) + L_tibia * (
+                    np.cos(x[21 + 24 * step]) * np.cos(x[22 + 24 * step]) * np.sin(x[23 + 24 * step]) + np.cos(
+                x[21 + 24 * step]) * np.cos(x[23 + 24 * step]) * np.sin(x[22 + 24 * step])) +
+        L_femur * np.cos(x[21 + 24 * step]) * np.cos(x[22 + 24 * step]) - x_body_front_half,
+
+        x[1 + 24 * step] - p_LF[1, step] +
+        L_coxa * np.sin(x[21 + 24 * step]) + L_tibia * (
+                    np.cos(x[22 + 24 * step]) * np.sin(x[21 + 24 * step]) * np.sin(x[23 + 24 * step]) + np.sin(
+                x[21 + 24 * step]) * np.cos(x[23 + 24 * step]) * np.sin(x[22 + 24 * step])) +
+        L_femur * np.cos(x[22 + 24 * step]) * np.sin(x[21 + 24 * step]) + y_body_half,
+
+        x[2 + 24 * step] - p_LF[2, step] +
+        L_femur * np.sin(x[22 + 24 * step]) - L_tibia * (
+                    np.cos(x[22 + 24 * step]) * np.cos(x[23 + 24 * step]) - np.sin(x[22 + 24 * step]) * np.sin(
+                x[23 + 24 * step]))
+
+        ])
     return result
 
-def grad_Knot(x, flag, user_data=None):
+def grad_leg_end_point_XYZ(x, flag, user_data=None):
     if flag:
-        x_array = np.array([0,1,2,3,4,5,6,7,8])
-        y_array = np.array([0,1,2,24*((N-1)/2)+0,24*((N-1)/2)+1,24*((N-1)/2)+2,24*(N-1)+0,24*(N-1)+1,24*(N-1)+2])
+        x_array = np.zeros(11*6*N)
+        y_array = np.zeros(11*6*N)
+        for step in range(N):
+            x_array[(0+66*step):(66+66*step)] =   \
+                np.array([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2,
+                0+3, 0+3, 0+3, 0+3, 1+3, 1+3, 1+3, 1+3, 2+3, 2+3, 2+3,
+                0+6, 0+6, 0+6, 0+6, 1+6, 1+6, 1+6, 1+6, 2+6, 2+6, 2+6,
+                0+9, 0+9, 0+9, 0+9, 1+9, 1+9, 1+9, 1+9, 2+9, 2+9, 2+9,
+                0+12, 0+12, 0+12, 0+12, 1+12, 1+12, 1+12, 1+12, 2+12, 2+12, 2+12,
+                0+15, 0+15, 0+15, 0+15, 1+15, 1+15, 1+15, 1+15, 2+15, 2+15, 2+15])
+
+            y_array[(0+66*step):(66+66*step)] =   \
+                np.array([0+24*step, 6+24*step,  7+24*step,  8+24*step,  1+24*step, 6+24*step,  7+24*step,  8+24*step,  2+24*step, 7+24*step,  8+24*step,
+                          0+24*step, 9+24*step,  10+24*step, 11+24*step, 1+24*step, 9+24*step,  10+24*step, 11+24*step, 2+24*step, 10+24*step, 11+24*step,
+                          0+24*step, 12+24*step, 13+24*step, 14+24*step, 1+24*step, 12+24*step, 13+24*step, 8+24*step,  2+24*step, 13+24*step, 14+24*step,
+                          0+24*step, 15+24*step, 16+24*step, 17+24*step, 1+24*step, 15+24*step, 16+24*step, 8+24*step,  2+24*step, 16+24*step, 17+24*step,
+                          0+24*step, 18+24*step, 19+24*step, 20+24*step, 1+24*step, 18+24*step, 19+24*step, 8+24*step,  2+24*step, 19+24*step, 20+24*step,
+                          0+24*step, 21+24*step, 22+24*step, 23+24*step, 1+24*step, 21+24*step, 22+24*step, 8+24*step,  2+24*step, 22+24*step, 23+24*step])
         return (x_array, y_array)
 
     else:
         assert len(x) == nvar
-        grad = np.array([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
+        grad = np.array(11*6*N)
+        for step in range(N):
+
+            grad[(0+66*step):(66+66*step)] = np.array([
+            # -------------------------------------  leg1  ------------------------------------------------------
+            1.0,
+
+            - L_coxa * np.sin(x[6 + 24 * step]) - L_tibia * (np.cos(x[7 + 24 * step]) * np.sin(x[6 + 24 * step]) * np.sin(x[8 + 24 * step]) +
+            np.sin(x[6 + 24 * step]) * np.cos(x[8 + 24 * step]) * np.sin(x[7 + 24 * step])) - \
+                                     L_femur * np.cos(x[7 + 24 * step]) * np.sin(x[6 + 24 * step]),
+
+            L_tibia * (np.cos(x[6 + 24 * step]) * np.cos(x[7 + 24 * step]) * np.cos(x[8 + 24 * step]) -
+            np.cos(x[6 + 24 * step]) * np.sin(x[7 + 24 * step]) * np.sin(x[8 + 24 * step])) - \
+                                     L_femur * np.cos(x[6 + 24 * step]) * np.sin(x[7 + 24 * step]),
+
+            L_tibia * (np.cos(x[6 + 24 * step]) * np.cos(x[7 + 24 * step]) * np.cos(x[8 + 24 * step]) -
+            np.cos(x[6 + 24 * step]) * np.sin(x[7 + 24 * step]) * np.sin(x[8 + 24 * step])),
+
+            1.0,
+
+            L_coxa * np.cos(x[6 + 24 * step]) + L_tibia * (np.cos(x[6 + 24 * step]) * np.cos(x[7 + 24 * step]) * np.sin(x[8 + 24 * step]) +
+            np.cos(x[6 + 24 * step]) * np.cos(x[8 + 24 * step]) * np.sin(x[7 + 24 * step])) + \
+                                     L_femur * np.cos(x[6 + 24 * step]) * np.cos(x[7 + 24 * step]),
+
+            L_tibia * (np.cos(x[7 + 24 * step]) * np.sin(x[6 + 24 * step]) * np.cos(x[8 + 24 * step]) -
+            np.sin(x[6 + 24 * step]) * np.sin(x[7 + 24 * step]) * np.sin(x[8 + 24 * step])) - \
+                                     L_femur * np.sin(x[6 + 24 * step]) * np.sin(x[7 + 24 * step]),
+
+            L_tibia * (np.cos(x[7 + 24 * step]) * np.sin(x[6 + 24 * step]) * np.cos(x[8 + 24 * step]) -
+            np.sin(x[6 + 24 * step]) * np.sin(x[7 + 24 * step]) * np.sin(x[8 + 24 * step])),
+
+            1.0,
+
+            L_tibia * (np.cos(x[7 + 24 * step]) * np.sin(x[8 + 24 * step]) +
+            np.cos(x[8 + 24 * step]) * np.sin(x[7 + 24 * step])) + L_femur * np.cos(x[7 + 24 * step]),
+
+            L_tibia * (np.cos(x[7 + 24 * step]) * np.sin(x[8 + 24 * step]) +
+            np.cos(x[8 + 24 * step]) * np.sin(x[7 + 24 * step])),
+
+            # -------------------------------------  leg2  ------------------------------------------------------
+            1.0,
+
+            - L_coxa * np.sin(x[9 + 24 * step]) - L_tibia * (
+                        np.cos(x[10 + 24 * step]) * np.sin(x[9 + 24 * step]) * np.sin(x[11 + 24 * step]) + np.sin(
+                    x[9 + 24 * step]) * np.cos(x[11 + 24 * step]) * np.sin(x[10 + 24 * step])) - \
+                                     L_femur * np.cos(x[10 + 24 * step]) * np.sin(x[9 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[9 + 24 * step]) * np.cos(x[10 + 24 * step]) * np.cos(x[11 + 24 * step]) - np.cos(
+                    x[9 + 24 * step]) * np.sin(x[10 + 24 * step]) * np.sin(x[11 + 24 * step])) - \
+                                      L_femur * np.cos(x[9 + 24 * step]) * np.sin(x[10 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[9 + 24 * step]) * np.cos(x[10 + 24 * step]) * np.cos(x[11 + 24 * step]) - np.cos(
+                    x[9 + 24 * step]) * np.sin(x[10 + 24 * step]) * np.sin(x[11 + 24 * step])),
+
+
+            1.0,
+
+            L_coxa * np.cos(x[9 + 24 * step]) + L_tibia * (
+                        np.cos(x[9 + 24 * step]) * np.cos(x[10 + 24 * step]) * np.sin(x[11 + 24 * step]) + np.cos(
+                    x[9 + 24 * step]) * np.cos(x[11 + 24 * step]) * np.sin(x[10 + 24 * step])) + \
+                                     L_femur * np.cos(x[9 + 24 * step]) * np.cos(x[10 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[10 + 24 * step]) * np.sin(x[9 + 24 * step]) * np.cos(x[11 + 24 * step]) - np.sin(
+                    x[9 + 24 * step]) * np.sin(x[10 + 24 * step]) * np.sin(x[11 + 24 * step])) - \
+                                      L_femur * np.sin(x[9 + 24 * step]) * np.sin(x[10 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[10 + 24 * step]) * np.sin(x[9 + 24 * step]) * np.cos(x[11 + 24 * step]) - np.sin(
+                    x[9 + 24 * step]) * np.sin(x[10 + 24 * step]) * np.sin(x[11 + 24 * step])),
+
+
+            1.0,
+
+            L_tibia * (
+                        np.cos(x[10 + 24 * step]) * np.sin(x[11 + 24 * step]) + np.cos(x[11 + 24 * step]) * np.sin(
+                    x[10 + 24 * step])) + L_femur * np.cos(x[10 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[10 + 24 * step]) * np.sin(x[11 + 24 * step]) + np.cos(x[11 + 24 * step]) * np.sin(
+                    x[10 + 24 * step])),
+
+
+            # -------------------------------------  leg3  ------------------------------------------------------
+
+            1.0,
+
+            - L_coxa * np.sin(x[12 + 24 * step]) - L_tibia * (
+                        np.cos(x[13 + 24 * step]) * np.sin(x[12 + 24 * step]) * np.sin(x[14 + 24 * step]) + np.sin(
+                    x[12 + 24 * step]) * np.cos(x[14 + 24 * step]) * np.sin(x[13 + 24 * step])) - \
+                                      L_femur * np.cos(x[13 + 24 * step]) * np.sin(x[12 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[12 + 24 * step]) * np.cos(x[13 + 24 * step]) * np.cos(x[14 + 24 * step]) - np.cos(
+                    x[12 + 24 * step]) * np.sin(x[13 + 24 * step]) * np.sin(x[14 + 24 * step])) - \
+                                      L_femur * np.cos(x[12 + 24 * step]) * np.sin(x[13 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[12 + 24 * step]) * np.cos(x[13 + 24 * step]) * np.cos(x[14 + 24 * step]) - np.cos(
+                    x[12 + 24 * step]) * np.sin(x[13 + 24 * step]) * np.sin(x[14 + 24 * step])),
+
+            1.0,
+
+            L_coxa * np.cos(x[12 + 24 * step]) + L_tibia * (
+                        np.cos(x[12 + 24 * step]) * np.cos(x[13 + 24 * step]) * np.sin(x[14 + 24 * step]) + np.cos(
+                    x[12 + 24 * step]) * np.cos(x[14 + 24 * step]) * np.sin(x[13 + 24 * step])) + \
+                                      L_femur * np.cos(x[12 + 24 * step]) * np.cos(x[13 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[13 + 24 * step]) * np.sin(x[12 + 24 * step]) * np.cos(x[14 + 24 * step]) - np.sin(
+                    x[12 + 24 * step]) * np.sin(x[13 + 24 * step]) * np.sin(x[14 + 24 * step])) - \
+                                      L_femur * np.sin(x[12 + 24 * step]) * np.sin(x[13 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[13 + 24 * step]) * np.sin(x[12 + 24 * step]) * np.cos(x[14 + 24 * step]) - np.sin(
+                    x[12 + 24 * step]) * np.sin(x[13 + 24 * step]) * np.sin(x[14 + 24 * step])),
+
+            1.0,
+
+            L_tibia * (
+                        np.cos(x[13 + 24 * step]) * np.sin(x[14 + 24 * step]) + np.cos(x[14 + 24 * step]) * np.sin(
+                    x[13 + 24 * step])) + L_femur * np.cos(x[13 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[13 + 24 * step]) * np.sin(x[14 + 24 * step]) + np.cos(x[14 + 24 * step]) * np.sin(
+                    x[13 + 24 * step])),
+
+
+            # -------------------------------------  leg4  ------------------------------------------------------
+
+            1.0,
+
+            - L_coxa * np.sin(x[15 + 24 * step]) - L_tibia * (
+                        np.cos(x[16 + 24 * step]) * np.sin(x[15 + 24 * step]) * np.sin(x[17 + 24 * step]) + np.sin(
+                    x[15 + 24 * step]) * np.cos(x[17 + 24 * step]) * np.sin(x[16 + 24 * step])) - \
+                                      L_femur * np.cos(x[16 + 24 * step]) * np.sin(x[15 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[15 + 24 * step]) * np.cos(x[16 + 24 * step]) * np.cos(x[17 + 24 * step]) - np.cos(
+                    x[15 + 24 * step]) * np.sin(x[16 + 24 * step]) * np.sin(x[17 + 24 * step])) - \
+                                      L_femur * np.cos(x[15 + 24 * step]) * np.sin(x[16 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[15 + 24 * step]) * np.cos(x[16 + 24 * step]) * np.cos(x[17 + 24 * step]) - np.cos(
+                    x[15 + 24 * step]) * np.sin(x[16 + 24 * step]) * np.sin(x[17 + 24 * step])),
+
+            1.0,
+
+            L_coxa * np.cos(x[15 + 24 * step]) + L_tibia * (
+                        np.cos(x[15 + 24 * step]) * np.cos(x[16 + 24 * step]) * np.sin(x[17 + 24 * step]) + np.cos(
+                    x[15 + 24 * step]) * np.cos(x[17 + 24 * step]) * np.sin(x[16 + 24 * step])) + \
+                                      L_femur * np.cos(x[15 + 24 * step]) * np.cos(x[16 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[16 + 24 * step]) * np.sin(x[15 + 24 * step]) * np.cos(x[17 + 24 * step]) - np.sin(
+                    x[15 + 24 * step]) * np.sin(x[16 + 24 * step]) * np.sin(x[17 + 24 * step])) - \
+                                      L_femur * np.sin(x[15 + 24 * step]) * np.sin(x[16 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[16 + 24 * step]) * np.sin(x[15 + 24 * step]) * np.cos(x[17 + 24 * step]) - np.sin(
+                    x[15 + 24 * step]) * np.sin(x[16 + 24 * step]) * np.sin(x[17 + 24 * step])),
+
+            1.0,
+
+            L_tibia * (
+                        np.cos(x[16 + 24 * step]) * np.sin(x[17 + 24 * step]) + np.cos(x[17 + 24 * step]) * np.sin(
+                    x[16 + 24 * step])) + L_femur * np.cos(x[16 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[16 + 24 * step]) * np.sin(x[17 + 24 * step]) + np.cos(x[17 + 24 * step]) * np.sin(
+                    x[16 + 24 * step])),
+
+
+            # -------------------------------------  leg5  ------------------------------------------------------
+            1.0,
+
+            - L_coxa * np.sin(x[18 + 24 * step]) - L_tibia * (
+                        np.cos(x[19 + 24 * step]) * np.sin(x[18 + 24 * step]) * np.sin(x[20 + 24 * step]) + np.sin(
+                    x[18 + 24 * step]) * np.cos(x[20 + 24 * step]) * np.sin(x[19 + 24 * step])) - \
+                                      L_femur * np.cos(x[19 + 24 * step]) * np.sin(x[18 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[18 + 24 * step]) * np.cos(x[19 + 24 * step]) * np.cos(x[20 + 24 * step]) - np.cos(
+                    x[18 + 24 * step]) * np.sin(x[19 + 24 * step]) * np.sin(x[20 + 24 * step])) - \
+                                      L_femur * np.cos(x[18 + 24 * step]) * np.sin(x[19 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[18 + 24 * step]) * np.cos(x[19 + 24 * step]) * np.cos(x[20 + 24 * step]) - np.cos(
+                    x[18 + 24 * step]) * np.sin(x[19 + 24 * step]) * np.sin(x[20 + 24 * step])),
+
+            1.0,
+
+            L_coxa * np.cos(x[18 + 24 * step]) + L_tibia * (
+                        np.cos(x[18 + 24 * step]) * np.cos(x[19 + 24 * step]) * np.sin(x[20 + 24 * step]) + np.cos(
+                    x[18 + 24 * step]) * np.cos(x[20 + 24 * step]) * np.sin(x[19 + 24 * step])) + \
+                                      L_femur * np.cos(x[18 + 24 * step]) * np.cos(x[19 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[19 + 24 * step]) * np.sin(x[18 + 24 * step]) * np.cos(x[20 + 24 * step]) - np.sin(
+                    x[18 + 24 * step]) * np.sin(x[19 + 24 * step]) * np.sin(x[20 + 24 * step])) - \
+                                      L_femur * np.sin(x[18 + 24 * step]) * np.sin(x[19 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[19 + 24 * step]) * np.sin(x[18 + 24 * step]) * np.cos(x[20 + 24 * step]) - np.sin(
+                    x[18 + 24 * step]) * np.sin(x[19 + 24 * step]) * np.sin(x[20 + 24 * step])),
+
+            1.0,
+
+            0.0,
+
+            L_tibia * (
+                        np.cos(x[19 + 24 * step]) * np.sin(x[20 + 24 * step]) + np.cos(x[20 + 24 * step]) * np.sin(
+                    x[19 + 24 * step])) + L_femur * np.cos(x[19 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[19 + 24 * step]) * np.sin(x[20 + 24 * step]) + np.cos(x[20 + 24 * step]) * np.sin(
+                    x[19 + 24 * step])),
+
+
+            # -------------------------------------  leg6  ------------------------------------------------------
+
+            1.0,
+
+            - L_coxa * np.sin(x[21 + 24 * step]) - L_tibia * (
+                        np.cos(x[22 + 24 * step]) * np.sin(x[21 + 24 * step]) * np.sin(x[23 + 24 * step]) + np.sin(
+                    x[21 + 24 * step]) * np.cos(x[23 + 24 * step]) * np.sin(x[22 + 24 * step])) - \
+                                      L_femur * np.cos(x[22 + 24 * step]) * np.sin(x[21 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[21 + 24 * step]) * np.cos(x[22 + 24 * step]) * np.cos(x[23 + 24 * step]) - np.cos(
+                    x[21 + 24 * step]) * np.sin(x[22 + 24 * step]) * np.sin(x[23 + 24 * step])) - \
+                                      L_femur * np.cos(x[21 + 24 * step]) * np.sin(x[22 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[21 + 24 * step]) * np.cos(x[22 + 24 * step]) * np.cos(x[23 + 24 * step]) - np.cos(
+                    x[21 + 24 * step]) * np.sin(x[22 + 24 * step]) * np.sin(x[23 + 24 * step])),
+
+            1.0,
+
+            L_coxa * np.cos(x[21 + 24 * step]) + L_tibia * (
+                        np.cos(x[21 + 24 * step]) * np.cos(x[22 + 24 * step]) * np.sin(x[23 + 24 * step]) + np.cos(
+                    x[21 + 24 * step]) * np.cos(x[23 + 24 * step]) * np.sin(x[22 + 24 * step])) + \
+                                      L_femur * np.cos(x[21 + 24 * step]) * np.cos(x[22 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[22 + 24 * step]) * np.sin(x[21 + 24 * step]) * np.cos(x[23 + 24 * step]) - np.sin(
+                    x[21 + 24 * step]) * np.sin(x[22 + 24 * step]) * np.sin(x[23 + 24 * step])) - \
+                                      L_femur * np.sin(x[21 + 24 * step]) * np.sin(x[22 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[22 + 24 * step]) * np.sin(x[21 + 24 * step]) * np.cos(x[23 + 24 * step]) - np.sin(
+                    x[21 + 24 * step]) * np.sin(x[22 + 24 * step]) * np.sin(x[23 + 24 * step])),
+
+
+            1.0,
+
+            L_tibia * (
+                        np.cos(x[22 + 24 * step]) * np.sin(x[23 + 24 * step]) + np.cos(x[23 + 24 * step]) * np.sin(
+                    x[22 + 24 * step])) + L_femur * np.cos(x[22 + 24 * step]),
+
+            L_tibia * (
+                        np.cos(x[22 + 24 * step]) * np.sin(x[23 + 24 * step]) + np.cos(x[23 + 24 * step]) * np.sin(
+                    x[22 + 24 * step]))])
+
     return grad
 
-# #------------------------------------ Constraint 3 -----------------------------------------------------------------
-# def leg1_end_point_XYZ(result, x, grad, step, px, py, pz):
-#
-#     #This is RF leg, the algebra is compared with matlab to verify it's correctness. Should carryout actual number to double check it!
-#     result[:] = np.array([
-#         x[0+24*step] - px +
-#         L_coxa*np.cos(x[6+24*step]) + L_tibia*(np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.sin(x[8+24*step]) + np.cos(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step])) +
-#         L_femur*np.cos(x[6+24*step])*np.cos(x[7+24*step]) + x_body_front_half,
-#
-#         x[1+24*step] - py +
-#         L_coxa*np.sin(x[6+24*step]) + L_tibia*(np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.sin(x[8+24*step]) + np.sin(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step])) +
-#         L_femur*np.cos(x[7+24*step])*np.sin(x[6+24*step]) + y_body_half,
-#
-#         x[2+24*step] - pz +
-#         L_femur*np.sin(x[7+24*step]) - L_tibia*(np.cos(x[7+24*step])*np.cos(x[8+24*step]) - np.sin(x[7+24*step])*np.sin(x[8+24*step]))])
-#
-#     #print("leg 1 end point results px=%f py=%f pz=%f res_x=%f res_y=%f res_z=%f" % (px, py, pz, result[0], result[1], result[2]))
-#     #Print this to verify convergence, should be 0 when converge!
-#
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24 * N])
-#
-#         grad[0, 0+24*step] = 1.0
-#         grad[0, 6+24*step] = - L_coxa*np.sin(x[6+24*step]) - L_tibia*(np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.sin(x[8+24*step]) + np.sin(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step])) - \
-#                              L_femur*np.cos(x[7+24*step])*np.sin(x[6+24*step])
-#         grad[0, 7+24*step] = L_tibia*(np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.cos(x[8+24*step]) - np.cos(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step])) - \
-#                              L_femur*np.cos(x[6+24*step])*np.sin(x[7+24*step])
-#         grad[0, 8+24*step] = L_tibia*(np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.cos(x[8+24*step]) - np.cos(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))
-#
-#         grad[1, 1+24*step] = 1.0
-#         grad[1, 6+24*step] = L_coxa*np.cos(x[6+24*step]) + L_tibia*(np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.sin(x[8+24*step]) + np.cos(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step])) + \
-#                              L_femur*np.cos(x[6+24*step])*np.cos(x[7+24*step])
-#         grad[1, 7+24*step] = L_tibia*(np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.cos(x[8+24*step]) - np.sin(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step])) - \
-#                              L_femur*np.sin(x[6+24*step])*np.sin(x[7+24*step])
-#         grad[1, 8+24*step] = L_tibia*(np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.cos(x[8+24*step]) - np.sin(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))
-#
-#         grad[2, 2+24*step] = 1.0
-#         grad[2, 6+24*step] = 0.0
-#         grad[2, 7+24*step] = L_tibia * (np.cos(x[7+24*step]) * np.sin(x[8+24*step]) + np.cos(x[8+24*step]) * np.sin(x[7+24*step])) + L_femur * np.cos(x[7+24*step])
-#         grad[2, 8+24*step] = L_tibia * (np.cos(x[7+24*step]) * np.sin(x[8+24*step]) + np.cos(x[8+24*step]) * np.sin(x[7+24*step]))
-#
-#     return result
-#
-# def leg2_end_point_XYZ(result, x, grad, step, px, py, pz):
-#     # This is RM leg
-#     result[:] = np.array([
-#         x[0+24*step] - px +
-#         L_coxa*np.cos(x[9+24*step]) + L_tibia*(np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.sin(x[11+24*step]) + np.cos(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step])) +
-#         L_femur*np.cos(x[9+24*step])*np.cos(x[10+24*step]) + x_body_mid_half,
-#
-#         x[1+24*step] - py +
-#         L_coxa*np.sin(x[9+24*step]) + L_tibia*(np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.sin(x[11+24*step]) + np.sin(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step])) +
-#         L_femur*np.cos(x[10+24*step])*np.sin(x[9+24*step]),
-#
-#         x[2+24*step] - pz +
-#         L_femur*np.sin(x[10+24*step]) - L_tibia*(np.cos(x[10+24*step])*np.cos(x[11+24*step]) - np.sin(x[10+24*step])*np.sin(x[11+24*step]))])
-#
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24 * N])
-#
-#         grad[0, 0+24*step] = 1.0
-#         grad[0, 9+24*step] = - L_coxa*np.sin(x[9+24*step]) - L_tibia*(np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.sin(x[11+24*step]) + np.sin(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step])) - \
-#                              L_femur*np.cos(x[10+24*step])*np.sin(x[9+24*step])
-#         grad[0, 10+24*step] = L_tibia*(np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.cos(x[11+24*step]) - np.cos(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step])) - \
-#                               L_femur*np.cos(x[9+24*step])*np.sin(x[10+24*step])
-#         grad[0, 11+24*step] =  L_tibia*(np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.cos(x[11+24*step]) - np.cos(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))
-#
-#         grad[1, 1+24*step] = 1.0
-#         grad[1, 9+24*step] = L_coxa*np.cos(x[9+24*step]) + L_tibia*(np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.sin(x[11+24*step]) + np.cos(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step])) + \
-#                              L_femur*np.cos(x[9+24*step])*np.cos(x[10+24*step])
-#         grad[1, 10+24*step] = L_tibia*(np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.cos(x[11+24*step]) - np.sin(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step])) - \
-#                               L_femur*np.sin(x[9+24*step])*np.sin(x[10+24*step])
-#         grad[1, 11+24*step] =  L_tibia*(np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.cos(x[11+24*step]) - np.sin(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))
-#
-#         grad[2, 2+24*step] = 1.0
-#         grad[2, 9+24*step] = 0.0
-#         grad[2, 10+24*step] = L_tibia*(np.cos(x[10+24*step])*np.sin(x[11+24*step]) + np.cos(x[11+24*step])*np.sin(x[10+24*step])) + L_femur*np.cos(x[10+24*step])
-#         grad[2, 11+24*step] = L_tibia*(np.cos(x[10+24*step])*np.sin(x[11+24*step]) + np.cos(x[11+24*step])*np.sin(x[10+24*step]))
-#
-#     return result
-#
-# def leg3_end_point_XYZ(result, x, grad, step, px, py, pz):
-#     # This is RR leg
-#     result[:] = np.array([
-#         x[0+24*step] - px +
-#         L_coxa*np.cos(x[12+24*step]) + L_tibia*(np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.sin(x[14+24*step]) + np.cos(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step])) +
-#         L_femur*np.cos(x[12+24*step])*np.cos(x[13+24*step]) + x_body_front_half,
-#
-#         x[1+24*step] - py +
-#         L_coxa*np.sin(x[12+24*step]) + L_tibia*(np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.sin(x[14+24*step]) + np.sin(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step])) +
-#         L_femur*np.cos(x[13+24*step])*np.sin(x[12+24*step]) - y_body_half,
-#
-#         x[2+24*step] - pz +
-#         L_femur*np.sin(x[13+24*step]) - L_tibia*(np.cos(x[13+24*step])*np.cos(x[14+24*step]) - np.sin(x[13+24*step])*np.sin(x[14+24*step]))])
-#
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24 * N])
-#
-#         grad[0, 0+24*step] = 1.0
-#         grad[0, 12+24*step] =  - L_coxa*np.sin(x[12+24*step]) - L_tibia*(np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.sin(x[14+24*step]) + np.sin(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step])) - \
-#                                L_femur*np.cos(x[13+24*step])*np.sin(x[12+24*step])
-#         grad[0, 13+24*step] = L_tibia*(np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.cos(x[14+24*step]) - np.cos(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step])) - \
-#                               L_femur*np.cos(x[12+24*step])*np.sin(x[13+24*step])
-#         grad[0, 14+24*step] = L_tibia*(np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.cos(x[14+24*step]) - np.cos(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))
-#
-#         grad[1, 1+24*step] = 1.0
-#         grad[1, 12+24*step] = L_coxa*np.cos(x[12+24*step]) + L_tibia*(np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.sin(x[14+24*step]) + np.cos(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step])) + \
-#                               L_femur*np.cos(x[12+24*step])*np.cos(x[13+24*step])
-#         grad[1, 13+24*step] =  L_tibia*(np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.cos(x[14+24*step]) - np.sin(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step])) - \
-#                                L_femur*np.sin(x[12+24*step])*np.sin(x[13+24*step])
-#         grad[1, 14+24*step] = L_tibia*(np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.cos(x[14+24*step]) - np.sin(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))
-#
-#         grad[2, 2+24*step] = 1.0
-#         grad[2, 12+24*step] = 0.0
-#         grad[2, 13+24*step] = L_tibia*(np.cos(x[13+24*step])*np.sin(x[14+24*step]) + np.cos(x[14+24*step])*np.sin(x[13+24*step])) + L_femur*np.cos(x[13+24*step])
-#         grad[2, 14+24*step] = L_tibia*(np.cos(x[13+24*step])*np.sin(x[14+24*step]) + np.cos(x[14+24*step])*np.sin(x[13+24*step]))
-#
-#     return result
-#
-#
-# def leg4_end_point_XYZ(result, x, grad, step, px, py, pz):
-#     # This is LR leg
-#     result[:] = np.array([
-#         x[0+24*step] - px +
-#         L_coxa*np.cos(x[15+24*step]) + L_tibia*(np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.sin(x[17+24*step]) + np.cos(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step])) +
-#         L_femur*np.cos(x[15+24*step])*np.cos(x[16+24*step]) - x_body_front_half,
-#
-#         x[1+24*step] - py +
-#         L_coxa*np.sin(x[15+24*step]) + L_tibia*(np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.sin(x[17+24*step]) + np.sin(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step])) +
-#         L_femur*np.cos(x[16+24*step])*np.sin(x[15+24*step]) - y_body_half,
-#
-#         x[2+24*step] - pz +
-#         L_femur*np.sin(x[16+24*step]) - L_tibia*(np.cos(x[16+24*step])*np.cos(x[17+24*step]) - np.sin(x[16+24*step])*np.sin(x[17+24*step]))])
-#
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24 * N])
-#
-#         grad[0, 0+24*step] = 1.0
-#         grad[0, 15+24*step] = - L_coxa*np.sin(x[15+24*step]) - L_tibia*(np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.sin(x[17+24*step]) + np.sin(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step])) - \
-#                               L_femur*np.cos(x[16+24*step])*np.sin(x[15+24*step])
-#         grad[0, 16+24*step] = L_tibia*(np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.cos(x[17+24*step]) - np.cos(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step])) - \
-#                               L_femur*np.cos(x[15+24*step])*np.sin(x[16+24*step])
-#         grad[0, 17+24*step] = L_tibia*(np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.cos(x[17+24*step]) - np.cos(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))
-#
-#         grad[1, 1+24*step] = 1.0
-#         grad[1, 15+24*step] = L_coxa*np.cos(x[15+24*step]) + L_tibia*(np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.sin(x[17+24*step]) + np.cos(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step])) + \
-#                               L_femur*np.cos(x[15+24*step])*np.cos(x[16+24*step])
-#         grad[1, 16+24*step] = L_tibia*(np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.cos(x[17+24*step]) - np.sin(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step])) - \
-#                               L_femur*np.sin(x[15+24*step])*np.sin(x[16+24*step])
-#         grad[1, 17+24*step] = L_tibia*(np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.cos(x[17+24*step]) - np.sin(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))
-#
-#         grad[2, 2+24*step] = 1.0
-#         grad[2, 15+24*step] = 0.0
-#         grad[2, 16+24*step] = L_tibia*(np.cos(x[16+24*step])*np.sin(x[17+24*step]) + np.cos(x[17+24*step])*np.sin(x[16+24*step])) + L_femur*np.cos(x[16+24*step])
-#         grad[2, 17+24*step] = L_tibia*(np.cos(x[16+24*step])*np.sin(x[17+24*step]) + np.cos(x[17+24*step])*np.sin(x[16+24*step]))
-#
-#     return result
-#
-# def leg5_end_point_XYZ(result, x, grad, step, px, py, pz):
-#     # This is LM leg
-#     result[:] = np.array([
-#         x[0+24*step] - px +
-#         L_coxa*np.cos(x[18+24*step]) +
-#         L_tibia*(np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.sin(x[20+24*step]) + np.cos(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step])) +
-#         L_femur*np.cos(x[18+24*step])*np.cos(x[19+24*step]) - x_body_mid_half,
-#
-#         x[1+24*step] - py +
-#         L_coxa*np.sin(x[18+24*step]) + L_tibia*(np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.sin(x[20+24*step]) + np.sin(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step])) +
-#         L_femur*np.cos(x[19+24*step])*np.sin(x[18+24*step]),
-#
-#         x[2+24*step] - pz +
-#         L_femur*np.sin(x[19+24*step]) - L_tibia*(np.cos(x[19+24*step])*np.cos(x[20+24*step]) - np.sin(x[19+24*step])*np.sin(x[20+24*step]))])
-#
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24 * N])
-#
-#         grad[0, 0+24*step] = 1.0
-#         grad[0, 18+24*step] = - L_coxa*np.sin(x[18+24*step]) - L_tibia*(np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.sin(x[20+24*step]) + np.sin(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step])) - \
-#                               L_femur*np.cos(x[19+24*step])*np.sin(x[18+24*step])
-#         grad[0, 19+24*step] = L_tibia*(np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.cos(x[20+24*step]) - np.cos(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step])) - \
-#                               L_femur*np.cos(x[18+24*step])*np.sin(x[19+24*step])
-#         grad[0, 20+24*step] = L_tibia*(np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.cos(x[20+24*step]) - np.cos(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))
-#
-#         grad[1, 1+24*step] = 1.0
-#         grad[1, 18+24*step] = L_coxa*np.cos(x[18+24*step]) + L_tibia*(np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.sin(x[20+24*step]) + np.cos(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step])) + \
-#                               L_femur*np.cos(x[18+24*step])*np.cos(x[19+24*step])
-#         grad[1, 19+24*step] = L_tibia*(np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.cos(x[20+24*step]) - np.sin(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step])) - \
-#                               L_femur*np.sin(x[18+24*step])*np.sin(x[19+24*step])
-#         grad[1, 20+24*step] = L_tibia*(np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.cos(x[20+24*step]) - np.sin(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))
-#
-#         grad[2, 2+24*step] = 1.0
-#         grad[2, 18+24*step] = 0.0
-#         grad[2, 19+24*step] = L_tibia*(np.cos(x[19+24*step])*np.sin(x[20+24*step]) + np.cos(x[20+24*step])*np.sin(x[19+24*step])) + L_femur*np.cos(x[19+24*step])
-#         grad[2, 20+24*step] = L_tibia*(np.cos(x[19+24*step])*np.sin(x[20+24*step]) + np.cos(x[20+24*step])*np.sin(x[19+24*step]))
-#
-#     return result
-#
-# def leg6_end_point_XYZ(result, x, grad, step, px, py, pz):
-#     # This is LF leg
-#     result[:] = np.array([
-#         x[0+24*step] - px +
-#         L_coxa*np.cos(x[21+24*step]) + L_tibia*(np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.sin(x[23+24*step]) + np.cos(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step])) +
-#         L_femur*np.cos(x[21+24*step])*np.cos(x[22+24*step]) - x_body_front_half,
-#
-#         x[1+24*step] - py +
-#         L_coxa*np.sin(x[21+24*step]) + L_tibia*(np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.sin(x[23+24*step]) + np.sin(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step])) +
-#         L_femur*np.cos(x[22+24*step])*np.sin(x[21+24*step]) + y_body_half,
-#
-#         x[2+24*step] - pz +
-#         L_femur*np.sin(x[22+24*step]) - L_tibia*(np.cos(x[22+24*step])*np.cos(x[23+24*step]) - np.sin(x[22+24*step])*np.sin(x[23+24*step]))])
-#
-#     if grad.size > 0:
-#         grad[:] = np.zeros([3, 24 * N])
-#
-#         grad[0, 0+24*step] = 1.0
-#         grad[0, 21+24*step] = - L_coxa*np.sin(x[21+24*step]) - L_tibia*(np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.sin(x[23+24*step]) + np.sin(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step])) - \
-#                               L_femur*np.cos(x[22+24*step])*np.sin(x[21+24*step])
-#         grad[0, 22+24*step] = L_tibia*(np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.cos(x[23+24*step]) - np.cos(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step])) - \
-#                               L_femur*np.cos(x[21+24*step])*np.sin(x[22+24*step])
-#         grad[0, 23+24*step] = L_tibia*(np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.cos(x[23+24*step]) - np.cos(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))
-#
-#         grad[1, 1+24*step] = 1.0
-#         grad[1, 21+24*step] =  L_coxa*np.cos(x[21+24*step]) + L_tibia*(np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.sin(x[23+24*step]) + np.cos(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step])) + \
-#                                L_femur*np.cos(x[21+24*step])*np.cos(x[22+24*step])
-#         grad[1, 22+24*step] = L_tibia*(np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.cos(x[23+24*step]) - np.sin(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step])) - \
-#                               L_femur*np.sin(x[21+24*step])*np.sin(x[22+24*step])
-#         grad[1, 23+24*step] = L_tibia*(np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.cos(x[23+24*step]) - np.sin(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))
-#
-#         grad[2, 2+24*step] = 1.0
-#         grad[2, 21+24*step] = 0.0
-#         grad[2, 22+24*step] = L_tibia*(np.cos(x[22+24*step])*np.sin(x[23+24*step]) + np.cos(x[23+24*step])*np.sin(x[22+24*step])) + L_femur*np.cos(x[22+24*step])
-#         grad[2, 23+24*step] = L_tibia*(np.cos(x[22+24*step])*np.sin(x[23+24*step]) + np.cos(x[23+24*step])*np.sin(x[22+24*step]))
-#
-#     return result
-#
+
+def leg1_end_point_XYZ(result, x, grad, step, px, py, pz):
+
+    #This is RF leg, the algebra is compared with matlab to verify it's correctness. Should carryout actual number to double check it!
+    result[:] = np.array([
+        x[0+24*step] - px +
+        L_coxa*np.cos(x[6+24*step]) + L_tibia*(np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.sin(x[8+24*step]) + np.cos(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step])) +
+        L_femur*np.cos(x[6+24*step])*np.cos(x[7+24*step]) + x_body_front_half,
+
+        x[1+24*step] - py +
+        L_coxa*np.sin(x[6+24*step]) + L_tibia*(np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.sin(x[8+24*step]) + np.sin(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step])) +
+        L_femur*np.cos(x[7+24*step])*np.sin(x[6+24*step]) + y_body_half,
+
+        x[2+24*step] - pz +
+        L_femur*np.sin(x[7+24*step]) - L_tibia*(np.cos(x[7+24*step])*np.cos(x[8+24*step]) - np.sin(x[7+24*step])*np.sin(x[8+24*step]))])
+
+    #print("leg 1 end point results px=%f py=%f pz=%f res_x=%f res_y=%f res_z=%f" % (px, py, pz, result[0], result[1], result[2]))
+    #Print this to verify convergence, should be 0 when converge!
+
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24 * N])
+
+        grad[0, 0+24*step] = 1.0
+        grad[0, 6+24*step] = - L_coxa*np.sin(x[6+24*step]) - L_tibia*(np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.sin(x[8+24*step]) + np.sin(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step])) - \
+                             L_femur*np.cos(x[7+24*step])*np.sin(x[6+24*step])
+        grad[0, 7+24*step] = L_tibia*(np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.cos(x[8+24*step]) - np.cos(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step])) - \
+                             L_femur*np.cos(x[6+24*step])*np.sin(x[7+24*step])
+        grad[0, 8+24*step] = L_tibia*(np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.cos(x[8+24*step]) - np.cos(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))
+
+        grad[1, 1+24*step] = 1.0
+        grad[1, 6+24*step] = L_coxa*np.cos(x[6+24*step]) + L_tibia*(np.cos(x[6+24*step])*np.cos(x[7+24*step])*np.sin(x[8+24*step]) + np.cos(x[6+24*step])*np.cos(x[8+24*step])*np.sin(x[7+24*step])) + \
+                             L_femur*np.cos(x[6+24*step])*np.cos(x[7+24*step])
+        grad[1, 7+24*step] = L_tibia*(np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.cos(x[8+24*step]) - np.sin(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step])) - \
+                             L_femur*np.sin(x[6+24*step])*np.sin(x[7+24*step])
+        grad[1, 8+24*step] = L_tibia*(np.cos(x[7+24*step])*np.sin(x[6+24*step])*np.cos(x[8+24*step]) - np.sin(x[6+24*step])*np.sin(x[7+24*step])*np.sin(x[8+24*step]))
+
+        grad[2, 2+24*step] = 1.0
+        grad[2, 6+24*step] = 0.0
+        grad[2, 7+24*step] = L_tibia * (np.cos(x[7+24*step]) * np.sin(x[8+24*step]) + np.cos(x[8+24*step]) * np.sin(x[7+24*step])) + L_femur * np.cos(x[7+24*step])
+        grad[2, 8+24*step] = L_tibia * (np.cos(x[7+24*step]) * np.sin(x[8+24*step]) + np.cos(x[8+24*step]) * np.sin(x[7+24*step]))
+
+    return result
+
+def leg2_end_point_XYZ(result, x, grad, step, px, py, pz):
+    # This is RM leg
+    result[:] = np.array([
+        x[0+24*step] - px +
+        L_coxa*np.cos(x[9+24*step]) + L_tibia*(np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.sin(x[11+24*step]) + np.cos(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step])) +
+        L_femur*np.cos(x[9+24*step])*np.cos(x[10+24*step]) + x_body_mid_half,
+
+        x[1+24*step] - py +
+        L_coxa*np.sin(x[9+24*step]) + L_tibia*(np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.sin(x[11+24*step]) + np.sin(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step])) +
+        L_femur*np.cos(x[10+24*step])*np.sin(x[9+24*step]),
+
+        x[2+24*step] - pz +
+        L_femur*np.sin(x[10+24*step]) - L_tibia*(np.cos(x[10+24*step])*np.cos(x[11+24*step]) - np.sin(x[10+24*step])*np.sin(x[11+24*step]))])
+
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24 * N])
+
+        grad[0, 0+24*step] = 1.0
+        grad[0, 9+24*step] = - L_coxa*np.sin(x[9+24*step]) - L_tibia*(np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.sin(x[11+24*step]) + np.sin(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step])) - \
+                             L_femur*np.cos(x[10+24*step])*np.sin(x[9+24*step])
+        grad[0, 10+24*step] = L_tibia*(np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.cos(x[11+24*step]) - np.cos(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step])) - \
+                              L_femur*np.cos(x[9+24*step])*np.sin(x[10+24*step])
+        grad[0, 11+24*step] =  L_tibia*(np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.cos(x[11+24*step]) - np.cos(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))
+
+        grad[1, 1+24*step] = 1.0
+        grad[1, 9+24*step] = L_coxa*np.cos(x[9+24*step]) + L_tibia*(np.cos(x[9+24*step])*np.cos(x[10+24*step])*np.sin(x[11+24*step]) + np.cos(x[9+24*step])*np.cos(x[11+24*step])*np.sin(x[10+24*step])) + \
+                             L_femur*np.cos(x[9+24*step])*np.cos(x[10+24*step])
+        grad[1, 10+24*step] = L_tibia*(np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.cos(x[11+24*step]) - np.sin(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step])) - \
+                              L_femur*np.sin(x[9+24*step])*np.sin(x[10+24*step])
+        grad[1, 11+24*step] =  L_tibia*(np.cos(x[10+24*step])*np.sin(x[9+24*step])*np.cos(x[11+24*step]) - np.sin(x[9+24*step])*np.sin(x[10+24*step])*np.sin(x[11+24*step]))
+
+        grad[2, 2+24*step] = 1.0
+        grad[2, 9+24*step] = 0.0
+        grad[2, 10+24*step] = L_tibia*(np.cos(x[10+24*step])*np.sin(x[11+24*step]) + np.cos(x[11+24*step])*np.sin(x[10+24*step])) + L_femur*np.cos(x[10+24*step])
+        grad[2, 11+24*step] = L_tibia*(np.cos(x[10+24*step])*np.sin(x[11+24*step]) + np.cos(x[11+24*step])*np.sin(x[10+24*step]))
+
+    return result
+
+def leg3_end_point_XYZ(result, x, grad, step, px, py, pz):
+    # This is RR leg
+    result[:] = np.array([
+        x[0+24*step] - px +
+        L_coxa*np.cos(x[12+24*step]) + L_tibia*(np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.sin(x[14+24*step]) + np.cos(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step])) +
+        L_femur*np.cos(x[12+24*step])*np.cos(x[13+24*step]) + x_body_front_half,
+
+        x[1+24*step] - py +
+        L_coxa*np.sin(x[12+24*step]) + L_tibia*(np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.sin(x[14+24*step]) + np.sin(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step])) +
+        L_femur*np.cos(x[13+24*step])*np.sin(x[12+24*step]) - y_body_half,
+
+        x[2+24*step] - pz +
+        L_femur*np.sin(x[13+24*step]) - L_tibia*(np.cos(x[13+24*step])*np.cos(x[14+24*step]) - np.sin(x[13+24*step])*np.sin(x[14+24*step]))])
+
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24 * N])
+
+        grad[0, 0+24*step] = 1.0
+        grad[0, 12+24*step] =  - L_coxa*np.sin(x[12+24*step]) - L_tibia*(np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.sin(x[14+24*step]) + np.sin(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step])) - \
+                               L_femur*np.cos(x[13+24*step])*np.sin(x[12+24*step])
+        grad[0, 13+24*step] = L_tibia*(np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.cos(x[14+24*step]) - np.cos(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step])) - \
+                              L_femur*np.cos(x[12+24*step])*np.sin(x[13+24*step])
+        grad[0, 14+24*step] = L_tibia*(np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.cos(x[14+24*step]) - np.cos(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))
+
+        grad[1, 1+24*step] = 1.0
+        grad[1, 12+24*step] = L_coxa*np.cos(x[12+24*step]) + L_tibia*(np.cos(x[12+24*step])*np.cos(x[13+24*step])*np.sin(x[14+24*step]) + np.cos(x[12+24*step])*np.cos(x[14+24*step])*np.sin(x[13+24*step])) + \
+                              L_femur*np.cos(x[12+24*step])*np.cos(x[13+24*step])
+        grad[1, 13+24*step] =  L_tibia*(np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.cos(x[14+24*step]) - np.sin(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step])) - \
+                               L_femur*np.sin(x[12+24*step])*np.sin(x[13+24*step])
+        grad[1, 14+24*step] = L_tibia*(np.cos(x[13+24*step])*np.sin(x[12+24*step])*np.cos(x[14+24*step]) - np.sin(x[12+24*step])*np.sin(x[13+24*step])*np.sin(x[14+24*step]))
+
+        grad[2, 2+24*step] = 1.0
+        grad[2, 12+24*step] = 0.0
+        grad[2, 13+24*step] = L_tibia*(np.cos(x[13+24*step])*np.sin(x[14+24*step]) + np.cos(x[14+24*step])*np.sin(x[13+24*step])) + L_femur*np.cos(x[13+24*step])
+        grad[2, 14+24*step] = L_tibia*(np.cos(x[13+24*step])*np.sin(x[14+24*step]) + np.cos(x[14+24*step])*np.sin(x[13+24*step]))
+
+    return result
+
+
+def leg4_end_point_XYZ(result, x, grad, step, px, py, pz):
+    # This is LR leg
+    result[:] = np.array([
+        x[0+24*step] - px +
+        L_coxa*np.cos(x[15+24*step]) + L_tibia*(np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.sin(x[17+24*step]) + np.cos(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step])) +
+        L_femur*np.cos(x[15+24*step])*np.cos(x[16+24*step]) - x_body_front_half,
+
+        x[1+24*step] - py +
+        L_coxa*np.sin(x[15+24*step]) + L_tibia*(np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.sin(x[17+24*step]) + np.sin(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step])) +
+        L_femur*np.cos(x[16+24*step])*np.sin(x[15+24*step]) - y_body_half,
+
+        x[2+24*step] - pz +
+        L_femur*np.sin(x[16+24*step]) - L_tibia*(np.cos(x[16+24*step])*np.cos(x[17+24*step]) - np.sin(x[16+24*step])*np.sin(x[17+24*step]))])
+
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24 * N])
+
+        grad[0, 0+24*step] = 1.0
+        grad[0, 15+24*step] = - L_coxa*np.sin(x[15+24*step]) - L_tibia*(np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.sin(x[17+24*step]) + np.sin(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step])) - \
+                              L_femur*np.cos(x[16+24*step])*np.sin(x[15+24*step])
+        grad[0, 16+24*step] = L_tibia*(np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.cos(x[17+24*step]) - np.cos(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step])) - \
+                              L_femur*np.cos(x[15+24*step])*np.sin(x[16+24*step])
+        grad[0, 17+24*step] = L_tibia*(np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.cos(x[17+24*step]) - np.cos(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))
+
+        grad[1, 1+24*step] = 1.0
+        grad[1, 15+24*step] = L_coxa*np.cos(x[15+24*step]) + L_tibia*(np.cos(x[15+24*step])*np.cos(x[16+24*step])*np.sin(x[17+24*step]) + np.cos(x[15+24*step])*np.cos(x[17+24*step])*np.sin(x[16+24*step])) + \
+                              L_femur*np.cos(x[15+24*step])*np.cos(x[16+24*step])
+        grad[1, 16+24*step] = L_tibia*(np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.cos(x[17+24*step]) - np.sin(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step])) - \
+                              L_femur*np.sin(x[15+24*step])*np.sin(x[16+24*step])
+        grad[1, 17+24*step] = L_tibia*(np.cos(x[16+24*step])*np.sin(x[15+24*step])*np.cos(x[17+24*step]) - np.sin(x[15+24*step])*np.sin(x[16+24*step])*np.sin(x[17+24*step]))
+
+        grad[2, 2+24*step] = 1.0
+        grad[2, 15+24*step] = 0.0
+        grad[2, 16+24*step] = L_tibia*(np.cos(x[16+24*step])*np.sin(x[17+24*step]) + np.cos(x[17+24*step])*np.sin(x[16+24*step])) + L_femur*np.cos(x[16+24*step])
+        grad[2, 17+24*step] = L_tibia*(np.cos(x[16+24*step])*np.sin(x[17+24*step]) + np.cos(x[17+24*step])*np.sin(x[16+24*step]))
+
+    return result
+
+def leg5_end_point_XYZ(result, x, grad, step, px, py, pz):
+    # This is LM leg
+    result[:] = np.array([
+        x[0+24*step] - px +
+        L_coxa*np.cos(x[18+24*step]) +
+        L_tibia*(np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.sin(x[20+24*step]) + np.cos(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step])) +
+        L_femur*np.cos(x[18+24*step])*np.cos(x[19+24*step]) - x_body_mid_half,
+
+        x[1+24*step] - py +
+        L_coxa*np.sin(x[18+24*step]) + L_tibia*(np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.sin(x[20+24*step]) + np.sin(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step])) +
+        L_femur*np.cos(x[19+24*step])*np.sin(x[18+24*step]),
+
+        x[2+24*step] - pz +
+        L_femur*np.sin(x[19+24*step]) - L_tibia*(np.cos(x[19+24*step])*np.cos(x[20+24*step]) - np.sin(x[19+24*step])*np.sin(x[20+24*step]))])
+
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24 * N])
+
+        grad[0, 0+24*step] = 1.0
+        grad[0, 18+24*step] = - L_coxa*np.sin(x[18+24*step]) - L_tibia*(np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.sin(x[20+24*step]) + np.sin(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step])) - \
+                              L_femur*np.cos(x[19+24*step])*np.sin(x[18+24*step])
+        grad[0, 19+24*step] = L_tibia*(np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.cos(x[20+24*step]) - np.cos(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step])) - \
+                              L_femur*np.cos(x[18+24*step])*np.sin(x[19+24*step])
+        grad[0, 20+24*step] = L_tibia*(np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.cos(x[20+24*step]) - np.cos(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))
+
+        grad[1, 1+24*step] = 1.0
+        grad[1, 18+24*step] = L_coxa*np.cos(x[18+24*step]) + L_tibia*(np.cos(x[18+24*step])*np.cos(x[19+24*step])*np.sin(x[20+24*step]) + np.cos(x[18+24*step])*np.cos(x[20+24*step])*np.sin(x[19+24*step])) + \
+                              L_femur*np.cos(x[18+24*step])*np.cos(x[19+24*step])
+        grad[1, 19+24*step] = L_tibia*(np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.cos(x[20+24*step]) - np.sin(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step])) - \
+                              L_femur*np.sin(x[18+24*step])*np.sin(x[19+24*step])
+        grad[1, 20+24*step] = L_tibia*(np.cos(x[19+24*step])*np.sin(x[18+24*step])*np.cos(x[20+24*step]) - np.sin(x[18+24*step])*np.sin(x[19+24*step])*np.sin(x[20+24*step]))
+
+        grad[2, 2+24*step] = 1.0
+        grad[2, 18+24*step] = 0.0
+        grad[2, 19+24*step] = L_tibia*(np.cos(x[19+24*step])*np.sin(x[20+24*step]) + np.cos(x[20+24*step])*np.sin(x[19+24*step])) + L_femur*np.cos(x[19+24*step])
+        grad[2, 20+24*step] = L_tibia*(np.cos(x[19+24*step])*np.sin(x[20+24*step]) + np.cos(x[20+24*step])*np.sin(x[19+24*step]))
+
+    return result
+
+def leg6_end_point_XYZ(result, x, grad, step, px, py, pz):
+    # This is LF leg
+    result[:] = np.array([
+        x[0+24*step] - px +
+        L_coxa*np.cos(x[21+24*step]) + L_tibia*(np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.sin(x[23+24*step]) + np.cos(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step])) +
+        L_femur*np.cos(x[21+24*step])*np.cos(x[22+24*step]) - x_body_front_half,
+
+        x[1+24*step] - py +
+        L_coxa*np.sin(x[21+24*step]) + L_tibia*(np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.sin(x[23+24*step]) + np.sin(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step])) +
+        L_femur*np.cos(x[22+24*step])*np.sin(x[21+24*step]) + y_body_half,
+
+        x[2+24*step] - pz +
+        L_femur*np.sin(x[22+24*step]) - L_tibia*(np.cos(x[22+24*step])*np.cos(x[23+24*step]) - np.sin(x[22+24*step])*np.sin(x[23+24*step]))])
+
+    if grad.size > 0:
+        grad[:] = np.zeros([3, 24 * N])
+
+        grad[0, 0+24*step] = 1.0
+        grad[0, 21+24*step] = - L_coxa*np.sin(x[21+24*step]) - L_tibia*(np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.sin(x[23+24*step]) + np.sin(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step])) - \
+                              L_femur*np.cos(x[22+24*step])*np.sin(x[21+24*step])
+        grad[0, 22+24*step] = L_tibia*(np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.cos(x[23+24*step]) - np.cos(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step])) - \
+                              L_femur*np.cos(x[21+24*step])*np.sin(x[22+24*step])
+        grad[0, 23+24*step] = L_tibia*(np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.cos(x[23+24*step]) - np.cos(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))
+
+        grad[1, 1+24*step] = 1.0
+        grad[1, 21+24*step] =  L_coxa*np.cos(x[21+24*step]) + L_tibia*(np.cos(x[21+24*step])*np.cos(x[22+24*step])*np.sin(x[23+24*step]) + np.cos(x[21+24*step])*np.cos(x[23+24*step])*np.sin(x[22+24*step])) + \
+                               L_femur*np.cos(x[21+24*step])*np.cos(x[22+24*step])
+        grad[1, 22+24*step] = L_tibia*(np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.cos(x[23+24*step]) - np.sin(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step])) - \
+                              L_femur*np.sin(x[21+24*step])*np.sin(x[22+24*step])
+        grad[1, 23+24*step] = L_tibia*(np.cos(x[22+24*step])*np.sin(x[21+24*step])*np.cos(x[23+24*step]) - np.sin(x[21+24*step])*np.sin(x[22+24*step])*np.sin(x[23+24*step]))
+
+        grad[2, 2+24*step] = 1.0
+        grad[2, 21+24*step] = 0.0
+        grad[2, 22+24*step] = L_tibia*(np.cos(x[22+24*step])*np.sin(x[23+24*step]) + np.cos(x[23+24*step])*np.sin(x[22+24*step])) + L_femur*np.cos(x[22+24*step])
+        grad[2, 23+24*step] = L_tibia*(np.cos(x[22+24*step])*np.sin(x[23+24*step]) + np.cos(x[23+24*step])*np.sin(x[22+24*step]))
+
+    return result
+
 # #------------------------------------ Constraint 4 -----------------------------------------------------------------
 # def leg1_end_point_Z(x, grad, step, pz):
 #     #This is RF leg, the algebra is compared with matlab to verify it's correctness. Should carryout actual number to double check it!
@@ -1998,53 +2434,53 @@ print "f(x*) =", obj
 # #if step < (N-1)/2, then leg: right, right, left => leg1, leg3, leg5
 # #if step > (N-1)/2, then leg: left, left, right => leg2, leg4, leg6
 # #Note those end points are on the ground
-# px_RF_1 = footstep_1_RF[0]
-# py_RF_1 = footstep_1_RF[1]
-# pz_RF_1 = footstep_1_RF[2]
-#
-# px_RF_2 = footstep_2_RF[0]
-# py_RF_2 = footstep_2_RF[1]
-# pz_RF_2 = footstep_2_RF[2]
-#
-# px_RM_1 = footstep_1_RM[0]
-# py_RM_1 = footstep_1_RM[1]
-# pz_RM_1 = footstep_1_RM[2]
-#
-# px_RM_2 = footstep_2_RM[0]
-# py_RM_2 = footstep_2_RM[1]
-# pz_RM_2 = footstep_2_RM[2]
-#
-# px_RR_1 = footstep_1_RR[0]
-# py_RR_1 = footstep_1_RR[1]
-# pz_RR_1 = footstep_1_RR[2]
-#
-# px_RR_2 = footstep_2_RR[0]
-# py_RR_2 = footstep_2_RR[1]
-# pz_RR_2 = footstep_2_RR[2]
-#
-# px_LR_1 = footstep_1_LR[0]
-# py_LR_1 = footstep_1_LR[1]
-# pz_LR_1 = footstep_1_LR[2]
-#
-# px_LR_2 = footstep_2_LR[0]
-# py_LR_2 = footstep_2_LR[1]
-# pz_LR_2 = footstep_2_LR[2]
-#
-# px_LM_1 = footstep_1_LM[0]
-# py_LM_1 = footstep_1_LM[1]
-# pz_LM_1 = footstep_1_LM[2]
-#
-# px_LM_2 = footstep_2_LM[0]
-# py_LM_2 = footstep_2_LM[1]
-# pz_LM_2 = footstep_2_LM[2]
-#
-# px_LF_1 = footstep_1_LF[0]
-# py_LF_1 = footstep_1_LF[1]
-# pz_LF_1 = footstep_1_LF[2]
-#
-# px_LF_2 = footstep_2_LF[0]
-# py_LF_2 = footstep_2_LF[1]
-# pz_LF_2 = footstep_2_LF[2]
+px_RF_1 = footstep_1_RF[0]
+py_RF_1 = footstep_1_RF[1]
+pz_RF_1 = footstep_1_RF[2]
+
+px_RF_2 = footstep_2_RF[0]
+py_RF_2 = footstep_2_RF[1]
+pz_RF_2 = footstep_2_RF[2]
+
+px_RM_1 = footstep_1_RM[0]
+py_RM_1 = footstep_1_RM[1]
+pz_RM_1 = footstep_1_RM[2]
+
+px_RM_2 = footstep_2_RM[0]
+py_RM_2 = footstep_2_RM[1]
+pz_RM_2 = footstep_2_RM[2]
+
+px_RR_1 = footstep_1_RR[0]
+py_RR_1 = footstep_1_RR[1]
+pz_RR_1 = footstep_1_RR[2]
+
+px_RR_2 = footstep_2_RR[0]
+py_RR_2 = footstep_2_RR[1]
+pz_RR_2 = footstep_2_RR[2]
+
+px_LR_1 = footstep_1_LR[0]
+py_LR_1 = footstep_1_LR[1]
+pz_LR_1 = footstep_1_LR[2]
+
+px_LR_2 = footstep_2_LR[0]
+py_LR_2 = footstep_2_LR[1]
+pz_LR_2 = footstep_2_LR[2]
+
+px_LM_1 = footstep_1_LM[0]
+py_LM_1 = footstep_1_LM[1]
+pz_LM_1 = footstep_1_LM[2]
+
+px_LM_2 = footstep_2_LM[0]
+py_LM_2 = footstep_2_LM[1]
+pz_LM_2 = footstep_2_LM[2]
+
+px_LF_1 = footstep_1_LF[0]
+py_LF_1 = footstep_1_LF[1]
+pz_LF_1 = footstep_1_LF[2]
+
+px_LF_2 = footstep_2_LF[0]
+py_LF_2 = footstep_2_LF[1]
+pz_LF_2 = footstep_2_LF[2]
 #
 # # THIS PART IS FIXED -----------------------------------------------------------------------------------------------------------
 # #All points on the ground at step=0
